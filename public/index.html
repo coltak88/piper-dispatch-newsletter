@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Piper Dispatch - Ultra-premium intelligence newsletter with adaptive interface, gamification, and quantum-resistant security" />
+    <meta name="keywords" content="newsletter, intelligence, briefing, adaptive interface, gamification, privacy-first, quantum security, neurodiversity, GDPR-plus, personalization" />
+    <meta name="author" content="Piper Dispatch Team" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://piper-dispatch.com/" />
+    <meta property="og:title" content="Piper Dispatch - Ultra-Premium Intelligence Newsletter" />
+    <meta property="og:description" content="Experience the future of intelligence briefings with our adaptive interface, gamification features, and quantum-resistant security." />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://piper-dispatch.com/" />
+    <meta property="twitter:title" content="Piper Dispatch - Ultra-Premium Intelligence Newsletter" />
+    <meta property="twitter:description" content="Experience the future of intelligence briefings with our adaptive interface, gamification features, and quantum-resistant security." />
+    <meta property="twitter:image" content="%PUBLIC_URL%/twitter-image.png" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; media-src 'self'; object-src 'none'; child-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), interest-cohort=()" />
+    
+    <!-- Privacy and Accessibility -->
+    <meta name="privacy-policy" content="https://piper-dispatch.com/privacy" />
+    <meta name="accessibility-statement" content="https://piper-dispatch.com/accessibility" />
+    <meta name="color-scheme" content="light dark" />
+    
+    <!-- PWA Manifest -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Critical CSS for performance -->
+    <style>
+      /* Critical CSS for initial render */
+      * {
+        box-sizing: border-box;
+      }
+      
+      html {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        scroll-behavior: smooth;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #ffffff;
+        color: #1a202c;
+        line-height: 1.6;
+      }
+      
+      #root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      /* Loading spinner */
+      .loading-spinner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Error boundary styles */
+      .error-boundary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: #f8fafc;
+        padding: 2rem;
+      }
+      
+      .error-container {
+        text-align: center;
+        max-width: 500px;
+        padding: 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+      
+      .error-container h2 {
+        color: #dc2626;
+        margin-bottom: 1rem;
+      }
+      
+      .error-container button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        margin-top: 1rem;
+      }
+      
+      .error-container button:hover {
+        background: #2563eb;
+      }
+      
+      /* Accessibility improvements */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+      
+      @media (prefers-contrast: high) {
+        body {
+          background-color: #000000;
+          color: #ffffff;
+        }
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #1a202c;
+          color: #f7fafc;
+        }
+      }
+      
+      /* Focus styles for keyboard navigation */
+      *:focus {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+      }
+      
+      /* Skip to main content link */
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 6px;
+        background: #3b82f6;
+        color: white;
+        padding: 8px;
+        text-decoration: none;
+        border-radius: 4px;
+        z-index: 1000;
+      }
+      
+      .skip-link:focus {
+        top: 6px;
+      }
+    </style>
+    
+    <title>Piper Dispatch - Ultra-Premium Intelligence Newsletter</title>
+  </head>
+  <body>
+    <noscript>
+      <div style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #f8fafc;
+        color: #1e293b;
+        text-align: center;
+        padding: 2rem;
+      ">
+        <div>
+          <h1 style="color: #dc2626; margin-bottom: 1rem;">JavaScript Required</h1>
+          <p style="color: #64748b; max-width: 400px;">You need to enable JavaScript to run this app. Piper Dispatch requires JavaScript for its advanced features including adaptive interface, quantum security, and personalized content delivery.</p>
+        </div>
+      </div>
+    </noscript>
+    
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Loading indicator -->
+    <div id="loading-indicator" class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+    
+    <!-- Main application root -->
+    <div id="root"></div>
+    
+    <!-- Remove loading indicator once React loads -->
+    <script>
+      // Remove loading indicator when React app starts
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          const loadingIndicator = document.getElementById('loading-indicator');
+          if (loadingIndicator && document.getElementById('root').children.length > 0) {
+            loadingIndicator.style.display = 'none';
+          }
+        }, 100);
+      });
+      
+      // Privacy-first analytics (no external tracking)
+      window.piperAnalytics = {
+        track: function(event, data) {
+          // Local analytics only - no external services
+          if (localStorage.getItem('piper-analytics-enabled') === 'true') {
+            const events = JSON.parse(localStorage.getItem('piper-analytics-events') || '[]');
+            events.push({
+              event: event,
+              data: data,
+              timestamp: new Date().toISOString(),
+              session: sessionStorage.getItem('piper-session-id')
+            });
+            
+            // Keep only last 100 events for privacy
+            if (events.length > 100) {
+              events.splice(0, events.length - 100);
+            }
+            
+            localStorage.setItem('piper-analytics-events', JSON.stringify(events));
+          }
+        }
+      };
+      
+      // Generate session ID for analytics
+      if (!sessionStorage.getItem('piper-session-id')) {
+        sessionStorage.setItem('piper-session-id', 
+          'session_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now()
+        );
+      }
+      
+      // Track page load (privacy-first)
+      window.piperAnalytics.track('page_load', {
+        url: window.location.pathname,
+        referrer: document.referrer ? 'external' : 'direct', // Privacy: don't store actual referrer
+        userAgent: navigator.userAgent.substring(0, 50), // Truncated for privacy
+        timestamp: new Date().toISOString()
+      });
+    </script>
+  </body>
+</html>

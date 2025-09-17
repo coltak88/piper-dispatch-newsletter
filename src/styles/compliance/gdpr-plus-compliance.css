@@ -1,0 +1,700 @@
+/**
+ * GDPR-Plus Compliance System Styles
+ * Privacy-first design with quantum-safe aesthetics
+ * Neurodiversity-optimized with accessibility features
+ */
+
+/* Root Variables - Privacy-First Color Palette */
+:root {
+  /* Privacy Protection Colors */
+  --privacy-primary: #2D5A87;
+  --privacy-secondary: #4A90A4;
+  --privacy-accent: #7FB069;
+  --privacy-warning: #F4A261;
+  --privacy-danger: #E76F51;
+  --privacy-success: #2A9D8F;
+  
+  /* Quantum-Safe Gradients */
+  --quantum-gradient: linear-gradient(135deg, #2D5A87 0%, #4A90A4 50%, #7FB069 100%);
+  --privacy-gradient: linear-gradient(45deg, #2A9D8F 0%, #7FB069 100%);
+  --security-gradient: linear-gradient(90deg, #2D5A87 0%, #4A90A4 100%);
+  
+  /* Compliance Indicators */
+  --compliance-excellent: #2A9D8F;
+  --compliance-good: #7FB069;
+  --compliance-warning: #F4A261;
+  --compliance-critical: #E76F51;
+  
+  /* Neurodiversity-Optimized Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+  
+  /* Typography - High Readability */
+  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* Accessibility Features */
+  --focus-ring: 0 0 0 3px rgba(45, 90, 135, 0.3);
+  --focus-ring-inset: inset 0 0 0 2px var(--privacy-primary);
+  
+  /* Animation Timing - Respects Reduced Motion */
+  --transition-fast: 0.15s ease-out;
+  --transition-normal: 0.3s ease-out;
+  --transition-slow: 0.5s ease-out;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0s;
+    --transition-normal: 0s;
+    --transition-slow: 0s;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --privacy-primary: #000000;
+    --privacy-secondary: #333333;
+    --privacy-accent: #006600;
+    --privacy-warning: #CC6600;
+    --privacy-danger: #CC0000;
+    --privacy-success: #006600;
+  }
+}
+
+/* Main Compliance Container */
+.gdpr-plus-compliance {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  font-family: var(--font-family-primary);
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gdpr-plus-compliance::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--quantum-gradient);
+  z-index: 1;
+}
+
+/* Compliance Header */
+.compliance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--privacy-primary);
+  position: relative;
+}
+
+.compliance-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--privacy-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.compliance-header h2::before {
+  content: '🔒';
+  font-size: 1.5rem;
+  animation: pulse-privacy 2s infinite;
+}
+
+@keyframes pulse-privacy {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* Compliance Score Display */
+.compliance-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--privacy-gradient);
+  border-radius: 12px;
+  color: white;
+  min-width: 120px;
+  box-shadow: 0 4px 12px rgba(45, 90, 135, 0.3);
+}
+
+.score-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.score-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Compliance Indicators Grid */
+.compliance-indicators {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.compliance-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: white;
+  border-radius: 12px;
+  border: 2px solid var(--privacy-secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.compliance-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--privacy-success);
+  transition: width var(--transition-normal);
+}
+
+.compliance-indicator:hover::before {
+  width: 8px;
+}
+
+.compliance-indicator:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border-color: var(--privacy-primary);
+}
+
+.indicator-icon {
+  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--privacy-gradient);
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(45, 90, 135, 0.2);
+}
+
+.indicator-content {
+  flex: 1;
+}
+
+.indicator-status {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--privacy-primary);
+  margin-bottom: var(--spacing-xs);
+  font-family: var(--font-family-mono);
+}
+
+.indicator-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* Privacy Settings Section */
+.privacy-settings {
+  background: white;
+  padding: var(--spacing-xl);
+  border-radius: 12px;
+  border: 2px solid var(--privacy-secondary);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.privacy-settings h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--privacy-primary);
+  margin: 0 0 var(--spacing-lg) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.privacy-settings h3::before {
+  content: '⚙️';
+  font-size: 1.25rem;
+}
+
+.setting-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.setting-group:last-child {
+  margin-bottom: 0;
+}
+
+.setting-group label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--privacy-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.setting-group select {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: 1rem;
+  border: 2px solid var(--privacy-secondary);
+  border-radius: 8px;
+  background: white;
+  color: var(--privacy-primary);
+  font-family: var(--font-family-primary);
+  transition: all var(--transition-normal);
+}
+
+.setting-group select:focus {
+  outline: none;
+  border-color: var(--privacy-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.setting-group select:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.setting-group select option:disabled {
+  color: #94a3b8;
+}
+
+/* Compliance Actions */
+.compliance-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+}
+
+.generate-report-btn,
+.purge-data-btn {
+  flex: 1;
+  min-width: 200px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.generate-report-btn {
+  background: var(--privacy-gradient);
+  color: white;
+  box-shadow: 0 2px 8px rgba(42, 157, 143, 0.3);
+}
+
+.generate-report-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(42, 157, 143, 0.4);
+}
+
+.generate-report-btn:focus {
+  outline: none;
+  box-shadow: var(--focus-ring), 0 4px 16px rgba(42, 157, 143, 0.4);
+}
+
+.purge-data-btn {
+  background: var(--privacy-warning);
+  color: white;
+  box-shadow: 0 2px 8px rgba(244, 162, 97, 0.3);
+}
+
+.purge-data-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(244, 162, 97, 0.4);
+  background: #e8944a;
+}
+
+.purge-data-btn:focus {
+  outline: none;
+  box-shadow: var(--focus-ring), 0 4px 16px rgba(244, 162, 97, 0.4);
+}
+
+/* Compliance Status Display */
+.compliance-status {
+  background: #f8fafc;
+  padding: var(--spacing-lg);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: var(--spacing-xl);
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-label {
+  font-weight: 500;
+  color: var(--privacy-primary);
+}
+
+.status-value {
+  font-family: var(--font-family-mono);
+  font-size: 0.875rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.status-value.success {
+  background: rgba(42, 157, 143, 0.1);
+  color: var(--privacy-success);
+}
+
+.status-value.warning {
+  background: rgba(244, 162, 97, 0.1);
+  color: var(--privacy-warning);
+}
+
+.status-value.pending {
+  background: rgba(148, 163, 184, 0.1);
+  color: #64748b;
+}
+
+/* Compliance Footer */
+.compliance-footer {
+  text-align: center;
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid #e2e8f0;
+}
+
+.compliance-notice {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #64748b;
+  margin: 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* GDPR-Plus Wrapper */
+.gdpr-plus-wrapper {
+  position: relative;
+}
+
+.gdpr-plus-wrapper::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--quantum-gradient);
+  z-index: 9999;
+  animation: privacy-pulse 3s infinite;
+}
+
+@keyframes privacy-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .gdpr-plus-compliance {
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm);
+  }
+  
+  .compliance-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: center;
+  }
+  
+  .compliance-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .compliance-indicators {
+    grid-template-columns: 1fr;
+  }
+  
+  .compliance-actions {
+    flex-direction: column;
+  }
+  
+  .generate-report-btn,
+  .purge-data-btn {
+    min-width: auto;
+  }
+  
+  .status-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .compliance-indicator {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+  
+  .indicator-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .gdpr-plus-compliance {
+    box-shadow: none;
+    border: 2px solid var(--privacy-primary);
+  }
+  
+  .compliance-actions {
+    display: none;
+  }
+  
+  .compliance-indicator:hover {
+    transform: none;
+  }
+  
+  .generate-report-btn:hover,
+  .purge-data-btn:hover {
+    transform: none;
+  }
+}
+
+/* Focus Management for Accessibility */
+.gdpr-plus-compliance *:focus {
+  outline: none;
+}
+
+.gdpr-plus-compliance button:focus,
+.gdpr-plus-compliance select:focus,
+.gdpr-plus-compliance input:focus {
+  box-shadow: var(--focus-ring);
+}
+
+/* Screen Reader Only Content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Loading States */
+.compliance-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xxl);
+  color: var(--privacy-primary);
+}
+
+.compliance-loading::before {
+  content: '🔄';
+  font-size: 2rem;
+  animation: spin 1s linear infinite;
+  margin-right: var(--spacing-sm);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Error States */
+.compliance-error {
+  background: rgba(231, 111, 81, 0.1);
+  border: 2px solid var(--privacy-danger);
+  color: var(--privacy-danger);
+  padding: var(--spacing-lg);
+  border-radius: 8px;
+  margin: var(--spacing-md) 0;
+}
+
+.compliance-error::before {
+  content: '⚠️ ';
+  font-weight: bold;
+}
+
+/* Success States */
+.compliance-success {
+  background: rgba(42, 157, 143, 0.1);
+  border: 2px solid var(--privacy-success);
+  color: var(--privacy-success);
+  padding: var(--spacing-lg);
+  border-radius: 8px;
+  margin: var(--spacing-md) 0;
+}
+
+.compliance-success::before {
+  content: '✅ ';
+  font-weight: bold;
+}
+
+/* Quantum Security Indicators */
+.quantum-indicator {
+  position: relative;
+  overflow: hidden;
+}
+
+.quantum-indicator::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: quantum-sweep 3s infinite;
+}
+
+@keyframes quantum-sweep {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Privacy Protection Visual Effects */
+.privacy-protected {
+  position: relative;
+}
+
+.privacy-protected::before {
+  content: '🛡️';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 0.75rem;
+  background: var(--privacy-success);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Neurodiversity-Friendly Enhancements */
+.neurodiversity-optimized {
+  /* Enhanced focus indicators */
+  --focus-ring: 0 0 0 4px rgba(45, 90, 135, 0.4);
+  
+  /* Increased spacing for better readability */
+  line-height: 1.6;
+  
+  /* Clear visual hierarchy */
+  font-weight: 500;
+}
+
+.neurodiversity-optimized button,
+.neurodiversity-optimized select {
+  min-height: 44px; /* Touch-friendly minimum size */
+  font-size: 1.1rem;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --privacy-primary: #60a5fa;
+    --privacy-secondary: #7dd3fc;
+    --privacy-accent: #86efac;
+    --privacy-warning: #fbbf24;
+    --privacy-danger: #f87171;
+    --privacy-success: #34d399;
+  }
+  
+  .gdpr-plus-compliance {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #f1f5f9;
+  }
+  
+  .compliance-indicator,
+  .privacy-settings {
+    background: #334155;
+    border-color: #475569;
+    color: #f1f5f9;
+  }
+  
+  .compliance-status {
+    background: #1e293b;
+    border-color: #334155;
+  }
+  
+  .indicator-description,
+  .compliance-notice {
+    color: #cbd5e1;
+  }
+}

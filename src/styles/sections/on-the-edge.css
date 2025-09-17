@@ -1,0 +1,1312 @@
+/* On the Edge Section - Cutting-Edge Technology & Breakthrough Innovations */
+
+.on-the-edge {
+  padding: 2rem;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.on-the-edge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.on-the-edge > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Header Styles */
+.edge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+}
+
+.header-content {
+  flex: 1;
+}
+
+.section-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem 0;
+}
+
+.title-icon {
+  font-size: 3rem;
+  background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+.title-text {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(45deg, #00ffff, #ffffff, #ff00ff);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease-in-out infinite;
+}
+
+.title-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.analysis-controls {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.control-group label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.analysis-selector,
+.filter-selector {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.analysis-selector:hover,
+.filter-selector:hover {
+  border-color: rgba(0, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.analysis-selector:focus,
+.filter-selector:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.2);
+}
+
+.edge-status {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  background: #00ff00;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.innovation-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.innovation-icon {
+  font-size: 1.2rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Breakthrough Dashboard */
+.breakthrough-dashboard {
+  margin-bottom: 3rem;
+}
+
+.subsection-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+.subsection-icon {
+  font-size: 1.8rem;
+  background: linear-gradient(45deg, #00ffff, #ff00ff);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.metric-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00ffff, #ff00ff, #ffff00);
+  background-size: 200% 100%;
+  animation: gradientShift 2s linear infinite;
+}
+
+.metric-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
+  border-color: rgba(0, 255, 255, 0.3);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.metric-icon {
+  font-size: 1.5rem;
+  opacity: 0.9;
+}
+
+.metric-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #00ffff;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.metric-description {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
+/* Technology Trends */
+.technology-trends {
+  margin-bottom: 3rem;
+}
+
+.trends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.trend-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.trend-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 0, 255, 0.15);
+  border-color: rgba(255, 0, 255, 0.3);
+}
+
+.trend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.trend-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.momentum-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.momentum-badge.exponential {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.momentum-badge.accelerating {
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.momentum-badge.strong {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.momentum-badge.growing {
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.momentum-badge.emerging {
+  background: rgba(255, 0, 255, 0.2);
+  color: #ff00ff;
+  border: 1px solid rgba(255, 0, 255, 0.3);
+}
+
+.momentum-badge.theoretical {
+  background: rgba(128, 128, 128, 0.2);
+  color: #cccccc;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.trend-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.maturity-level {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 1rem;
+  color: #00ffff;
+  font-weight: 600;
+}
+
+.maturity-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.maturity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #ff00ff);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.impact-assessment {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.impact-value.revolutionary {
+  color: #ff4444;
+  text-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+}
+
+.impact-value.transformative {
+  color: #ffa500;
+  text-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+}
+
+.impact-value.high {
+  color: #00ff00;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.impact-value.significant {
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.impact-value.paradigm-shifting {
+  color: #ff00ff;
+  text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+}
+
+/* Breakthrough Technologies */
+.breakthrough-technologies {
+  margin-bottom: 3rem;
+}
+
+.technologies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.technology-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.technology-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #00ffff, #ff00ff, #ffff00, #00ff00);
+  background-size: 300% 100%;
+  animation: gradientShift 3s linear infinite;
+}
+
+.technology-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(0, 255, 255, 0.2);
+  border-color: rgba(0, 255, 255, 0.4);
+}
+
+.technology-card.selected {
+  border-color: #00ffff;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+  background: rgba(0, 255, 255, 0.05);
+}
+
+.technology-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.technology-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.technology-badges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.category-badge {
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.breakthrough-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.breakthrough-badge.revolutionary {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.breakthrough-badge.high {
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.technology-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.maturity-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.maturity-badge.research {
+  background: rgba(128, 128, 128, 0.2);
+  color: #cccccc;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.maturity-badge.prototype {
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.maturity-badge.development {
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.maturity-badge.production {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.time-to-market {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.disruption-score {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.score-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.score-value {
+  font-size: 1rem;
+  color: #ff00ff;
+  font-weight: 700;
+}
+
+.technology-description {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1.5rem;
+}
+
+.technical-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.technical-metrics .metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.technical-metrics .metric-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.technical-metrics .metric-value {
+  font-size: 0.9rem;
+  color: #00ffff;
+  font-weight: 600;
+}
+
+.applications {
+  margin-bottom: 1.5rem;
+}
+
+.applications-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.75rem 0;
+}
+
+.applications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.application-item {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border-left: 3px solid #00ffff;
+}
+
+.investment-metrics {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.investment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.investment-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.investment-value {
+  font-size: 1.1rem;
+  color: #ffff00;
+  font-weight: 700;
+}
+
+.technology-badges-footer {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.compliance-badge,
+.neurodiversity-badge,
+.sustainability-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.compliance-badge {
+  background: rgba(0, 255, 0, 0.1);
+  color: #00ff00;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.neurodiversity-badge {
+  background: rgba(255, 0, 255, 0.1);
+  color: #ff00ff;
+  border: 1px solid rgba(255, 0, 255, 0.3);
+}
+
+.sustainability-badge {
+  background: rgba(0, 255, 255, 0.1);
+  color: #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.badge-icon {
+  font-size: 0.9rem;
+}
+
+/* Emerging Breakthroughs */
+.emerging-breakthroughs {
+  margin-bottom: 3rem;
+}
+
+.emerging-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.emerging-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.emerging-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff00ff, transparent);
+  background-size: 200% 100%;
+  animation: gradientShift 4s linear infinite;
+}
+
+.emerging-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 0, 255, 0.15);
+  border-color: rgba(255, 0, 255, 0.3);
+}
+
+.emerging-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.emerging-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  flex: 1;
+}
+
+.emerging-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.stage-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.stage-badge.early-research {
+  background: rgba(128, 128, 128, 0.2);
+  color: #cccccc;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.stage-badge.concept-development {
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.stage-badge.theoretical-research {
+  background: rgba(255, 0, 255, 0.2);
+  color: #ff00ff;
+  border: 1px solid rgba(255, 0, 255, 0.3);
+}
+
+.potential-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.potential-badge.transformative {
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.potential-badge.revolutionary {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.emerging-description {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1rem;
+}
+
+.emerging-meta {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.meta-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.meta-value {
+  font-size: 0.9rem;
+  color: #00ffff;
+  font-weight: 600;
+}
+
+.meta-value.civilization-changing {
+  color: #ff4444;
+  text-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+}
+
+.meta-value.industry-transforming {
+  color: #ffa500;
+  text-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+}
+
+.meta-value.paradigm-shifting {
+  color: #ff00ff;
+  text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+}
+
+/* Technology Leaders */
+.technology-leaders {
+  margin-bottom: 3rem;
+}
+
+.leaders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.leader-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.leader-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ffff00, #00ffff, #ff00ff);
+  background-size: 200% 100%;
+  animation: gradientShift 3s linear infinite;
+}
+
+.leader-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(255, 255, 0, 0.2);
+  border-color: rgba(255, 255, 0, 0.3);
+}
+
+.leader-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.leader-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  flex: 1;
+}
+
+.investment-received {
+  font-size: 1rem;
+  color: #ffff00;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+}
+
+.leader-focus {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.leader-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.leader-metrics .metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.leader-metrics .metric-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.leader-metrics .metric-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.rating-a-plus {
+  color: #00ff00;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.rating-a {
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* Analysis Panel */
+.analysis-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.panel-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #00ffff;
+  margin: 0;
+}
+
+.close-panel {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-panel:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.analysis-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1.5rem;
+}
+
+.loading-spinner.breakthrough {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(0, 255, 255, 0.2);
+  border-top: 4px solid #00ffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.analysis-loading p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.analysis-content {
+  padding: 2rem;
+}
+
+.breakthrough-insights,
+.commercialization-strategy,
+.impact-projection {
+  margin-bottom: 2rem;
+}
+
+.breakthrough-insights h4,
+.commercialization-strategy h4,
+.impact-projection h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #00ffff;
+  margin: 0 0 1rem 0;
+}
+
+.breakthrough-insights ul,
+.commercialization-strategy ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.breakthrough-insights li,
+.commercialization-strategy li {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: rgba(0, 255, 255, 0.05);
+  border-left: 3px solid #00ffff;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.projection-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.projection-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.projection-factor {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.projection-value {
+  font-size: 1.5rem;
+  color: #ffff00;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+}
+
+/* Privacy Notice */
+.privacy-notice {
+  margin-top: 3rem;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.privacy-notice p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.privacy-icon,
+.innovation-icon {
+  font-size: 1rem;
+}
+
+/* Animations */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Neurodiversity Optimizations */
+.on-the-edge.adhd-optimized {
+  --animation-duration: 0.2s;
+}
+
+.on-the-edge.adhd-optimized .title-icon,
+.on-the-edge.adhd-optimized .title-text,
+.on-the-edge.adhd-optimized .subsection-icon {
+  animation-duration: var(--animation-duration);
+}
+
+.on-the-edge.adhd-optimized .technology-card {
+  border-width: 2px;
+}
+
+.on-the-edge.adhd-optimized .metric-card {
+  border-width: 2px;
+}
+
+.on-the-edge.dyslexia-optimized {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', cursive;
+  line-height: 1.8;
+  letter-spacing: 0.1em;
+}
+
+.on-the-edge.dyslexia-optimized .technology-title,
+.on-the-edge.dyslexia-optimized .section-title .title-text {
+  font-size: 1.8rem;
+}
+
+.on-the-edge.dyslexia-optimized .technology-description,
+.on-the-edge.dyslexia-optimized .emerging-description {
+  font-size: 1.1rem;
+  line-height: 2;
+}
+
+.on-the-edge.asd-optimized {
+  --border-radius: 4px;
+}
+
+.on-the-edge.asd-optimized .technology-card,
+.on-the-edge.asd-optimized .metric-card,
+.on-the-edge.asd-optimized .trend-card {
+  border-radius: var(--border-radius);
+}
+
+.on-the-edge.asd-optimized .technologies-grid {
+  grid-template-columns: 1fr;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .on-the-edge {
+    padding: 1rem;
+  }
+  
+  .edge-header {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .analysis-controls {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .technologies-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  .trends-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .leaders-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .analysis-panel {
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .title-text {
+    font-size: 2rem;
+  }
+  
+  .technology-header {
+    gap: 0.75rem;
+  }
+  
+  .technology-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .technical-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .applications-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .investment-metrics {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .projection-matrix {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .on-the-edge {
+    padding: 0.75rem;
+  }
+  
+  .title-text {
+    font-size: 1.75rem;
+  }
+  
+  .technology-card {
+    padding: 1.5rem;
+  }
+  
+  .metric-card {
+    padding: 1rem;
+  }
+  
+  .emerging-meta {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .leader-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .leader-metrics {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
