@@ -707,7 +707,8 @@ const AnonymousNetworkingView = ({ founderProfile, onNetworkingComplete, differe
 };
 
 // Move export default to top level
-export default UnderestimatedFounder;
+// Move export to top level
+// Remove export from current location
 
 // Remove export from current location
     
