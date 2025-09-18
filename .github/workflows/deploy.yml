@@ -33,12 +33,12 @@ on:
 env:
   NODE_VERSION: '18'
   DOCKER_REGISTRY: 'gcr.io'
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PROJECT_ID: 'sarvajaya-genesis-protocol'
   SERVICE_NAME: 'piper-dispatch-main'
   REGION: 'us-central1'
-  MIN_INSTANCES: '1'
-  MAX_INSTANCES: '10'
-  MEMORY: '2Gi'
+  MIN_INSTANCES: '0'
+  MAX_INSTANCES: '3'
+  MEMORY: '1Gi'
   CPU: '1000m'
 
 jobs:
