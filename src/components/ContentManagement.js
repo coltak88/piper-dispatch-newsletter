@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ContentScheduler from '../services/ContentScheduler';
 
 const ContentManagement = ({ 
   userRole = 'editor',
@@ -15,87 +16,60 @@ const ContentManagement = ({
   const [sortBy, setSortBy] = useState('date');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock article data
-  const mockArticles = [
+  // Content API configuration
+  const CONTENT_API_CONFIG = {
+    baseUrl: process.env.REACT_APP_CONTENT_API_URL || '/api/content',
+    timeout: 10000,
+    retryAttempts: 3
+  };
+
+  // Fetch articles from API
+  const fetchArticles = async () => {
+    try {
+      const response = await fetch(`${CONTENT_API_CONFIG.baseUrl}/articles`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'X-Privacy-Mode': 'strict',
+          'X-User-Role': userRole
+        },
+        signal: AbortSignal.timeout(CONTENT_API_CONFIG.timeout)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.articles || [];
+    } catch (error) {
+      console.error('Failed to fetch articles:', error);
+      return getFallbackArticles();
+    }
+  };
+
+  const getAuthToken = () => {
+    return localStorage.getItem('authToken') || 'demo-token';
+  };
+
+  // Fallback article data
+  const getFallbackArticles = () => [
     {
-      id: 1,
-      title: 'The Future of AI in Newsletter Publishing',
-      content: 'Artificial Intelligence is revolutionizing how we create and distribute newsletter content...',
-      excerpt: 'Exploring how AI transforms newsletter creation and distribution.',
-      author: 'John Doe',
+      id: 'fallback_1',
+      title: 'Welcome to Piper Newsletter',
+      content: 'This is a fallback article displayed when the API is unavailable...',
+      excerpt: 'Welcome message for new users.',
+      author: 'Piper Team',
       status: 'published',
-      category: 'Technology',
-      publishDate: '2024-01-15',
-      lastModified: '2024-01-15',
-      views: 2543,
-      engagement: 85,
-      tags: ['AI', 'Technology', 'Publishing'],
+      category: 'General',
+      publishDate: new Date().toISOString().split('T')[0],
+      lastModified: new Date().toISOString().split('T')[0],
+      views: 100,
+      engagement: 75,
+      tags: ['Welcome', 'General'],
       featured: true,
-      wordCount: 1250
-    },
-    {
-      id: 2,
-      title: 'Quantum Computing Breakthrough',
-      content: 'Recent advances in quantum computing are opening new possibilities...',
-      excerpt: 'Latest developments in quantum computing technology.',
-      author: 'Jane Smith',
-      status: 'draft',
-      category: 'Science',
-      publishDate: null,
-      lastModified: '2024-01-14',
-      views: 0,
-      engagement: 0,
-      tags: ['Quantum', 'Computing', 'Science'],
-      featured: false,
-      wordCount: 890
-    },
-    {
-      id: 3,
-      title: 'Climate Tech Innovations',
-      content: 'Innovative technologies are emerging to combat climate change...',
-      excerpt: 'New technologies addressing climate challenges.',
-      author: 'Mike Johnson',
-      status: 'scheduled',
-      category: 'Environment',
-      publishDate: '2024-01-20',
-      lastModified: '2024-01-13',
-      views: 0,
-      engagement: 0,
-      tags: ['Climate', 'Technology', 'Environment'],
-      featured: false,
-      wordCount: 1100
-    },
-    {
-      id: 4,
-      title: 'Space Exploration Updates',
-      content: 'The latest missions and discoveries in space exploration...',
-      excerpt: 'Recent developments in space exploration.',
-      author: 'Sarah Wilson',
-      status: 'published',
-      category: 'Science',
-      publishDate: '2024-01-12',
-      lastModified: '2024-01-12',
-      views: 1432,
-      engagement: 69,
-      tags: ['Space', 'Exploration', 'Science'],
-      featured: false,
-      wordCount: 975
-    },
-    {
-      id: 5,
-      title: 'Biotech Advances in Medicine',
-      content: 'Revolutionary biotechnology applications in healthcare...',
-      excerpt: 'How biotech is transforming medical treatments.',
-      author: 'Dr. Emily Chen',
-      status: 'review',
-      category: 'Healthcare',
-      publishDate: null,
-      lastModified: '2024-01-11',
-      views: 0,
-      engagement: 0,
-      tags: ['Biotech', 'Medicine', 'Healthcare'],
-      featured: true,
-      wordCount: 1350
+      wordCount: 500
     }
   ];
 
@@ -105,14 +79,18 @@ const ContentManagement = ({
   useEffect(() => {
     const loadArticles = async () => {
       setIsLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setArticles(mockArticles);
+      try {
+        const articlesData = await fetchArticles();
+        setArticles(articlesData);
+      } catch (error) {
+        console.error('Failed to load articles:', error);
+        setArticles(getFallbackArticles());
+      }
       setIsLoading(false);
     };
 
     loadArticles();
-  }, []);
+  }, [userRole]);
 
   const filteredArticles = articles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -164,32 +164,52 @@ class SubscriptionEngine {
         this.initializePersonalizationEngine();
     }
 
-    loadSubscriptions() {
-        // Simulate loading from database
-        const mockSubscriptions = [
+    async loadSubscriptions() {
+        try {
+            const response = await fetch('/api/subscriptions', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.getAuthToken()}`,
+                    'X-Privacy-Mode': 'strict'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const subscriptions = await response.json();
+            subscriptions.forEach(sub => {
+                this.subscribers.set(sub.userId, sub);
+            });
+        } catch (error) {
+            console.error('Failed to load subscriptions:', error);
+            // Use fallback data on error
+            this.loadFallbackSubscriptions();
+        }
+    }
+
+    loadFallbackSubscriptions() {
+        const fallbackSubscriptions = [
             {
-                userId: 'user_001',
-                tier: 'executive',
+                userId: 'fallback_001',
+                tier: 'standard',
                 status: 'active',
-                startDate: '2024-01-01',
-                nextBilling: '2024-02-01',
-                gamificationScore: 1250,
-                personalizationLevel: 'advanced'
-            },
-            {
-                userId: 'user_002',
-                tier: 'ultra_exclusive',
-                status: 'active',
-                startDate: '2023-12-01',
-                nextBilling: '2024-02-01',
-                gamificationScore: 2500,
-                personalizationLevel: 'bespoke'
+                startDate: new Date().toISOString().split('T')[0],
+                nextBilling: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                gamificationScore: 500,
+                personalizationLevel: 'basic'
             }
         ];
 
-        mockSubscriptions.forEach(sub => {
+        fallbackSubscriptions.forEach(sub => {
             this.subscribers.set(sub.userId, sub);
         });
+    }
+
+    getAuthToken() {
+        return localStorage.getItem('authToken') || 'demo-token';
     }
 
     initializeBillingProcessor() {

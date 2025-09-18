@@ -12,6 +12,10 @@ import TheVanguard from './sections/TheVanguard';
 import OatsSection from './sections/OatsSection';
 import EasternMeridian from './sections/EasternMeridian';
 import OnTheEdge from './sections/OnTheEdge';
+import ThreatIntelligence from './sections/ThreatIntelligence';
+
+// Import components
+import PersonalizedContent from './components/PersonalizedContent';
 
 // Import Special Kit integration
 import SpecialKitIntegration from './specialkit/SpecialKitIntegration';
@@ -106,6 +110,10 @@ const PiperDispatch = () => {
         return <EasternMeridian {...sectionProps} />;
       case 'edge':
         return <OnTheEdge {...sectionProps} />;
+      case 'threat':
+        return <ThreatIntelligence {...sectionProps} />;
+      case 'personalized':
+        return <PersonalizedContent {...sectionProps} />;
       default:
         return <TheSignal {...sectionProps} />;
     }
@@ -216,6 +224,20 @@ const PiperDispatch = () => {
             >
               <span className="nav-icon">⚡</span>
               <span className="nav-text">On the Edge</span>
+            </button>
+            <button 
+              className={`nav-button ${currentSection === 'threat' ? 'active' : ''}`}
+              onClick={() => handleSectionChange('threat')}
+            >
+              <span className="nav-icon">🛡️</span>
+              <span className="nav-text">Threat Intelligence</span>
+            </button>
+            <button 
+              className={`nav-button ${currentSection === 'personalized' ? 'active' : ''}`}
+              onClick={() => handleSectionChange('personalized')}
+            >
+              <span className="nav-icon">🎯</span>
+              <span className="nav-text">Personalized</span>
             </button>
           </div>
 

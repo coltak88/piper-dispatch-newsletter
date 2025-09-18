@@ -1,0 +1,1243 @@
+/**
+ * Personal Assistant Dashboard Styles
+ * Modern, professional styling for AI PA interface
+ */
+
+.personal-assistant {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+/* Loading State */
+.personal-assistant-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-status {
+    margin-top: 10px;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* Header */
+.pa-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pa-header-left h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pa-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.active {
+    background: #4CAF50;
+}
+
+.status-indicator.initializing {
+    background: #FF9800;
+}
+
+.status-indicator.error {
+    background: #F44336;
+}
+
+.status-indicator.inactive {
+    background: #9E9E9E;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.status-text {
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.pa-header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.notifications-toggle {
+    position: relative;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.notifications-toggle:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.notification-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #F44336;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Navigation */
+.pa-navigation {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    padding: 0 30px;
+    display: flex;
+    gap: 5px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+.nav-tab {
+    background: none;
+    border: none;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s;
+    white-space: nowrap;
+    color: #666;
+}
+
+.nav-tab:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+.nav-tab.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 -2px 10px rgba(102, 126, 234, 0.3);
+}
+
+/* Main Content */
+.pa-main {
+    padding: 30px;
+    min-height: calc(100vh - 140px);
+}
+
+.pa-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    min-height: 600px;
+}
+
+/* Notifications Panel */
+.notifications-panel {
+    position: fixed;
+    top: 100px;
+    right: 30px;
+    width: 350px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid #667eea;
+    position: relative;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+    border-left-color: #4CAF50;
+}
+
+.notification.error {
+    border-left-color: #F44336;
+}
+
+.notification.warning {
+    border-left-color: #FF9800;
+}
+
+.notification.info {
+    border-left-color: #2196F3;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification-content h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.notification-content p {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: #999;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.notification-action {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.notification-action:hover {
+    background: #5a6fd8;
+}
+
+.notification-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #999;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-close:hover {
+    color: #666;
+}
+
+/* Dashboard Tab */
+.dashboard-tab h2 {
+    margin: 0 0 30px 0;
+    font-size: 32px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.refresh-button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.refresh-button:hover {
+    transform: translateY(-2px);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.dashboard-card h3 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* System Status */
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.status-label {
+    font-weight: 500;
+    color: #666;
+}
+
+.status-value {
+    font-weight: 600;
+    text-transform: capitalize;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.status-value.active {
+    background: #e8f5e8;
+    color: #4CAF50;
+}
+
+.status-value.inactive {
+    background: #f5f5f5;
+    color: #9E9E9E;
+}
+
+.status-value.error {
+    background: #ffebee;
+    color: #F44336;
+}
+
+/* Lists */
+.appointments-list,
+.meetings-list,
+.calls-list,
+.tasks-list,
+.insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.appointment-item,
+.meeting-item,
+.call-item,
+.task-item,
+.insight-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.appointment-item:hover,
+.meeting-item:hover,
+.call-item:hover,
+.task-item:hover,
+.insight-item:hover {
+    background: #e9ecef;
+}
+
+.appointment-time,
+.meeting-time,
+.call-duration {
+    font-weight: 600;
+    color: #667eea;
+    min-width: 80px;
+}
+
+.appointment-details,
+.meeting-details,
+.call-details,
+.task-details {
+    flex: 1;
+}
+
+.appointment-title,
+.meeting-title,
+.call-contact,
+.task-title {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.appointment-client,
+.meeting-participants,
+.call-time,
+.task-due {
+    font-size: 14px;
+    color: #666;
+}
+
+.task-priority {
+    display: flex;
+    align-items: center;
+}
+
+.priority-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.priority-indicator.high {
+    background: #F44336;
+}
+
+.priority-indicator.medium {
+    background: #FF9800;
+}
+
+.priority-indicator.low {
+    background: #4CAF50;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Phone Tab */
+.phone-tab h2,
+.appointments-tab h2,
+.meetings-tab h2,
+.insights-tab h2,
+.chat-tab h2 {
+    margin: 0 0 30px 0;
+    font-size: 32px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.incoming-call,
+.active-call {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.caller-info,
+.call-info {
+    margin-bottom: 20px;
+}
+
+.caller-name {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.caller-number,
+.call-duration {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.call-actions,
+.call-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.answer-button,
+.decline-button,
+.mute-button,
+.hold-button,
+.end-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.answer-button {
+    background: #4CAF50;
+    color: white;
+}
+
+.decline-button,
+.end-button {
+    background: #F44336;
+    color: white;
+}
+
+.mute-button,
+.hold-button {
+    background: #FF9800;
+    color: white;
+}
+
+.answer-button:hover,
+.decline-button:hover,
+.mute-button:hover,
+.hold-button:hover,
+.end-button:hover {
+    transform: translateY(-2px);
+}
+
+.voicemails-section,
+.call-history-section {
+    margin-top: 30px;
+}
+
+.voicemails-section h3,
+.call-history-section h3 {
+    margin-bottom: 15px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.voicemail-item,
+.call-history-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.voicemail-info {
+    flex: 1;
+}
+
+.voicemail-caller {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.voicemail-time,
+.voicemail-duration {
+    font-size: 14px;
+    color: #666;
+}
+
+.play-button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.play-button:hover {
+    background: #5a6fd8;
+}
+
+/* Appointments Tab */
+.appointment-requests {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.request-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.request-info {
+    flex: 1;
+}
+
+.requester-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.requested-time,
+.request-purpose {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.request-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.accept-button,
+.suggest-button,
+.prepare-button,
+.resolve-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.accept-button {
+    background: #4CAF50;
+    color: white;
+}
+
+.suggest-button,
+.prepare-button {
+    background: #667eea;
+    color: white;
+}
+
+.resolve-button {
+    background: #FF9800;
+    color: white;
+}
+
+.accept-button:hover,
+.suggest-button:hover,
+.prepare-button:hover,
+.resolve-button:hover {
+    transform: translateY(-1px);
+}
+
+.todays-appointments,
+.upcoming-appointments {
+    margin-bottom: 25px;
+}
+
+.calendar-conflicts {
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.conflict-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.conflict-appointments {
+    font-weight: 600;
+    color: #F44336;
+}
+
+.conflict-time {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Meetings Tab */
+.active-meeting {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.meeting-controls {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.join-button,
+.record-button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.join-button:hover,
+.record-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.join-button:disabled,
+.record-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.live-notes {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.live-notes h4 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.notes-content {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.meeting-preparation {
+    margin-top: 25px;
+}
+
+.preparation-item {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.prep-meeting {
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.prep-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.prep-task {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.prep-task input[type="checkbox"] {
+    margin: 0;
+}
+
+/* Insights Tab */
+.daily-insights,
+.weekly-trends,
+.recommendations,
+.performance-metrics {
+    margin-bottom: 30px;
+}
+
+.trends-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.trend-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.trend-metric {
+    font-weight: 600;
+    flex: 1;
+}
+
+.trend-change {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.trend-direction {
+    font-size: 18px;
+}
+
+.trend-percentage {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.trend-description {
+    font-size: 14px;
+    color: #666;
+    flex: 2;
+}
+
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.recommendation-item {
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.recommendation-priority {
+    display: flex;
+    align-items: flex-start;
+}
+
+.priority-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-badge.high {
+    background: #ffebee;
+    color: #F44336;
+}
+
+.priority-badge.medium {
+    background: #fff3e0;
+    color: #FF9800;
+}
+
+.priority-badge.low {
+    background: #e8f5e8;
+    color: #4CAF50;
+}
+
+.recommendation-content {
+    flex: 1;
+}
+
+.recommendation-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.recommendation-description {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+.recommendation-impact {
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.metric-item {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.metric-name {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: #667eea;
+}
+
+/* Chat Tab */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 80%;
+}
+
+.message.user {
+    margin-left: auto;
+}
+
+.message.user .message-content {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 18px 18px 4px 18px;
+}
+
+.message.ai .message-content {
+    background: white;
+    color: #333;
+    padding: 12px 16px;
+    border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message-time {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.message.user .message-time {
+    text-align: right;
+}
+
+.message.ai .message-time {
+    text-align: left;
+}
+
+.message-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.message-action {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.message-action:hover {
+    background: #5a6fd8;
+}
+
+.typing {
+    display: flex;
+    align-items: center;
+}
+
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #999;
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-10px);
+    }
+}
+
+.chat-input-form {
+    display: flex;
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    gap: 10px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 25px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.chat-input:focus {
+    border-color: #667eea;
+}
+
+.chat-send-button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.chat-send-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.chat-send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.chat-suggestions {
+    display: flex;
+    gap: 10px;
+    padding: 0 20px 20px;
+    background: white;
+    flex-wrap: wrap;
+}
+
+.suggestion-button {
+    background: #f0f0f0;
+    border: 1px solid #e0e0e0;
+    padding: 8px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.suggestion-button:hover {
+    background: #e0e0e0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .pa-header {
+        padding: 15px 20px;
+    }
+    
+    .pa-header-left h1 {
+        font-size: 24px;
+    }
+    
+    .pa-navigation {
+        padding: 0 20px;
+        overflow-x: auto;
+    }
+    
+    .nav-tab {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+    
+    .pa-main {
+        padding: 20px;
+    }
+    
+    .pa-content {
+        padding: 20px;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .notifications-panel {
+        right: 20px;
+        width: calc(100vw - 40px);
+        max-width: 350px;
+    }
+    
+    .chat-container {
+        height: 500px;
+    }
+    
+    .message {
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 480px) {
+    .pa-header {
+        padding: 10px 15px;
+    }
+    
+    .pa-header-left h1 {
+        font-size: 20px;
+    }
+    
+    .pa-main {
+        padding: 15px;
+    }
+    
+    .pa-content {
+        padding: 15px;
+    }
+    
+    .dashboard-card {
+        padding: 20px;
+    }
+    
+    .chat-container {
+        height: 400px;
+    }
+}

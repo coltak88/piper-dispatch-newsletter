@@ -10,25 +10,35 @@ const EasternMeridian = ({ neurodiversityMode, privacyToken, specialKitActive })
   const [regionFilter, setRegionFilter] = useState('all');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Initialize meridian data with market intelligence
+  // Initialize meridian data with real-time API integration
   useEffect(() => {
     const loadMeridianData = async () => {
       try {
-        // Load Asia-Pacific market data with privacy-first processing
-        const data = await MarketIntelligenceEngine.loadRegionalData('asia-pacific', {
-          privacyToken,
-          marketMetrics: true,
-          dataRetention: 0
+        // Fetch real-time Eastern Meridian data
+        const data = await fetchMeridianData();
+        
+        // Apply differential privacy protection
+        const protectedData = await PrivacyFirstTracker.applyDifferentialPrivacy(data, {
+          epsilon: 0.1,
+          delta: 1e-5,
+          privacyToken
         });
-
-        setMeridianData(data);
+        
+        setMeridianData(protectedData);
       } catch (error) {
         console.error('Eastern Meridian data loading failed:', error);
+        // Use fallback data on error
+        setMeridianData(fallbackMeridianData);
       }
     };
 
     loadMeridianData();
-  }, [privacyToken]);
+    
+    // Set up real-time updates every 3 minutes
+    const updateInterval = setInterval(loadMeridianData, 180000);
+    
+    return () => clearInterval(updateInterval);
+  }, [privacyToken, regionFilter, analysisMode]);
 
   // Handle market analysis with privacy protection
   const analyzeMarket = async (market) => {
@@ -61,43 +71,95 @@ const EasternMeridian = ({ neurodiversityMode, privacyToken, specialKitActive })
     }
   };
 
-  // Mock Eastern Meridian data for demonstration
-  const mockMeridianData = {
-    asiaPacificMarkets: [
-      {
-        id: 'china-quantum-computing',
-        title: 'China Quantum Computing Ecosystem',
-        region: 'China',
-        marketSize: '$12.8B',
-        growthRate: '47.3%',
-        maturityLevel: 'Emerging Leader',
-        opportunityScore: 94,
-        description: 'China\'s quantum computing sector showing unprecedented growth with privacy-first quantum networks and neurodiversity-inclusive research programs.',
-        keyMetrics: {
-          marketCap: '$12.8B',
-          yearOverYear: '+47.3%',
-          investmentFlow: '$3.2B',
-          startupCount: 234,
-          patentFilings: 1847,
-          neurodiversityIndex: 87
-        },
-        keyPlayers: [
-          { name: 'Quantum Innovation Labs', role: 'Research Leader', focus: 'Privacy-First Quantum Networks' },
-          { name: 'Beijing Quantum Systems', role: 'Hardware Provider', focus: 'Quantum Processors' },
-          { name: 'Inclusive Quantum Institute', role: 'Accessibility Partner', focus: 'Neurodiversity Integration' }
-        ],
-        opportunities: [
-          'Privacy-preserving quantum communication',
-          'Neurodiversity-optimized quantum interfaces',
-          'Quantum-secured financial systems',
-          'Quantum AI for sustainable development'
-        ],
-        risks: [
-          'Regulatory uncertainty',
-          'Talent acquisition challenges',
-          'International collaboration barriers',
-          'Privacy compliance complexity'
-        ],
+  // Production API configuration for Eastern Meridian data
+  const MERIDIAN_API_CONFIG = {
+    baseUrl: process.env.REACT_APP_MERIDIAN_API_URL || 'https://meridian.piperdispatch.com',
+    version: 'v2',
+    endpoints: {
+      asiaPacific: '/asia-pacific-markets',
+      marketAnalysis: '/market-analysis',
+      opportunities: '/emerging-opportunities',
+      riskAssessment: '/risk-assessment'
+    }
+  };
+
+  // Real-time Eastern Meridian data fetching
+  const fetchMeridianData = async () => {
+    try {
+      const [marketsData, analysisData, opportunitiesData] = await Promise.all([
+        fetchAsiaPacificMarkets(),
+        fetchMarketAnalysis(),
+        fetchEmergingOpportunities()
+      ]);
+
+      return {
+        asiaPacificMarkets: marketsData,
+        marketAnalysis: analysisData,
+        emergingOpportunities: opportunitiesData,
+        lastUpdated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Eastern Meridian data fetch failed:', error);
+      throw error;
+    }
+  };
+
+  // Fetch Asia-Pacific markets with privacy protection
+  const fetchAsiaPacificMarkets = async () => {
+    const response = await fetch(`${MERIDIAN_API_CONFIG.baseUrl}${MERIDIAN_API_CONFIG.endpoints.asiaPacific}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('meridianToken')}`,
+        'X-Privacy-Level': 'maximum',
+        'X-Region-Filter': regionFilter,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Asia-Pacific markets fetch failed: ${response.status}`);
+    const data = await response.json();
+    
+    // Apply privacy protection to market data
+    return await PrivacyFirstTracker.applyDataProtection(data, {
+      anonymization: true,
+      privacyToken
+    });
+  };
+
+  // Fetch market analysis data
+  const fetchMarketAnalysis = async () => {
+    const response = await fetch(`${MERIDIAN_API_CONFIG.baseUrl}${MERIDIAN_API_CONFIG.endpoints.marketAnalysis}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('meridianToken')}`,
+        'X-Analysis-Mode': analysisMode,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Market analysis fetch failed: ${response.status}`);
+    return await response.json();
+  };
+
+  // Fetch emerging opportunities
+  const fetchEmergingOpportunities = async () => {
+    const response = await fetch(`${MERIDIAN_API_CONFIG.baseUrl}${MERIDIAN_API_CONFIG.endpoints.opportunities}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('meridianToken')}`,
+        'X-Privacy-Level': 'maximum',
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Opportunities fetch failed: ${response.status}`);
+    return await response.json();
+  };
+
+  // Fallback data structure for offline mode
+  const fallbackMeridianData = {
+    asiaPacificMarkets: [],
+    marketAnalysis: [],
+    emergingOpportunities: [],
+    lastUpdated: new Date().toISOString()
+  };
         privacyCompliant: true,
         neurodiversityOptimized: true,
         sustainabilityScore: 89
@@ -301,7 +363,7 @@ const EasternMeridian = ({ neurodiversityMode, privacyToken, specialKitActive })
     }
   };
 
-  const currentData = meridianData || mockMeridianData;
+  const currentData = meridianData || fallbackMeridianData;
 
   // Filter markets based on selected region
   const filteredMarkets = currentData.asiaPacificMarkets.filter(market => {

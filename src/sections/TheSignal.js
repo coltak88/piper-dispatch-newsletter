@@ -1,32 +1,177 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/sections/the-signal.css';
 import { PrivacyFirstTracker } from '../services/privacy/PrivacyTracker';
 import { NeurodiversityOptimizer } from '../services/neurodiversity/NeurodiversityOptimizer';
+import { 
+    fetchLiveMarketData, 
+    fetchMarketIntelligence, 
+    fetchEconomicIndicators,
+    MarketDataWebSocket,
+    DATA_CATEGORIES 
+} from '../services/MarketDataService';
+import PersonalizationEngine from '../services/PersonalizationEngine';
 
 const TheSignal = ({ neurodiversityMode, privacyToken, specialKitActive }) => {
   const [signalData, setSignalData] = useState(null);
   const [selectedTrend, setSelectedTrend] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [privacyMode, setPrivacyMode] = useState('maximum');
+  const [marketData, setMarketData] = useState(null);
+  const [economicIndicators, setEconomicIndicators] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const wsRef = useRef(null);
+  const sectionRef = useRef(null);
+  const startTime = useRef(Date.now());
 
   // Initialize section with privacy-first data loading
   useEffect(() => {
     const loadSignalData = async () => {
+      if (!privacyToken) return;
+
       try {
-        // Load market intelligence with differential privacy
-        const data = await PrivacyFirstTracker.loadSectionData('signal', {
-          epsilon: 0.05,
+        // Fetch real-time market data
+        const [liveMarketData, marketIntelligence, indicators] = await Promise.all([
+          fetchLiveMarketData(['SPY', 'QQQ', 'VIX', 'DXY'], DATA_CATEGORIES.INDICES),
+          fetchMarketIntelligence(['market_trends', 'geopolitical', 'economic'], 10),
+          fetchEconomicIndicators(['GDP', 'CPI', 'unemployment', 'interest_rates'])
+        ]);
+
+        // Combine all data sources
+        const combinedData = {
+          marketTrends: liveMarketData.quotes || [],
+          emergingSignals: marketIntelligence.articles || [],
+          riskFactors: indicators.indicators || [],
+          threatLevel: calculateThreatLevel(liveMarketData, indicators),
+          confidenceScore: calculateConfidenceScore(liveMarketData, marketIntelligence),
+          lastUpdated: new Date().toISOString()
+        };
+        
+        // Apply differential privacy to the data
+        const privacyProtectedData = await PrivacyFirstTracker.applyDifferentialPrivacy(combinedData, {
+          epsilon: privacyMode === 'maximum' ? 0.01 : 0.05,
           onDeviceProcessing: true,
           dataRetention: 0
         });
 
-        setSignalData(data);
+        setSignalData(privacyProtectedData);
+        setMarketData(liveMarketData);
+        setEconomicIndicators(indicators);
       } catch (error) {
         console.error('Signal data loading failed:', error);
+        // Use fallback data in case of API failure
+        setSignalData(fallbackSignalData);
       }
     };
 
     loadSignalData();
+    
+    // Set up real-time updates every 30 seconds
+    const updateInterval = setInterval(loadSignalData, 30000);
+    
+    return () => clearInterval(updateInterval);
+   }, [privacyToken, privacyMode]);
+
+  // Initialize personalization tracking
+  useEffect(() => {
+    PersonalizationEngine.initialize();
+    
+    // Track section entry
+    PersonalizationEngine.trackReadingBehavior({
+      section: 'signal',
+      action: 'enter',
+      timestamp: Date.now(),
+      content_type: 'market_intelligence'
+    });
+
+    return () => {
+      // Track reading time on exit
+      const readingTime = Date.now() - startTime.current;
+      PersonalizationEngine.trackReadingBehavior({
+        section: 'signal',
+        action: 'exit',
+        timestamp: Date.now(),
+        reading_time: readingTime,
+        content_type: 'market_intelligence'
+      });
+    };
+  }, []);
+
+  // Track scroll behavior
+  useEffect(() => {
+    const handleScroll = () => {
+      if (sectionRef.current) {
+        const rect = sectionRef.current.getBoundingClientRect();
+        const scrollDepth = Math.max(0, Math.min(100, 
+          ((window.innerHeight - rect.top) / rect.height) * 100
+        ));
+        
+        PersonalizationEngine.trackReadingBehavior({
+          section: 'signal',
+          action: 'scroll',
+          scroll_depth: scrollDepth,
+          timestamp: Date.now()
+        });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Calculate threat level based on market data and indicators
+  const calculateThreatLevel = (marketData, indicators) => {
+    try {
+      const vixLevel = marketData.quotes?.find(q => q.symbol === 'VIX')?.price || 0;
+      const unemploymentRate = indicators.indicators?.find(i => i.name === 'unemployment')?.value || 0;
+      
+      if (vixLevel > 30 || unemploymentRate > 8) return 'high';
+      if (vixLevel > 20 || unemploymentRate > 6) return 'medium';
+      return 'low';
+    } catch (error) {
+      console.error('Error calculating threat level:', error);
+      return 'unknown';
+    }
+  };
+
+  // Calculate confidence score based on data quality
+  const calculateConfidenceScore = (marketData, intelligence) => {
+    try {
+      const dataQuality = marketData.status === 'live' ? 0.9 : 0.5;
+      const intelligenceQuality = intelligence.status === 'live' ? 0.9 : 0.5;
+      return Math.round((dataQuality + intelligenceQuality) / 2 * 100);
+    } catch (error) {
+      console.error('Error calculating confidence score:', error);
+      return 0;
+    }
+  };
+
+  // Set up WebSocket connection for real-time updates
+  useEffect(() => {
+    if (!privacyToken) return;
+
+    const handleWebSocketMessage = (data) => {
+      if (data.type === 'market_update') {
+        setMarketData(prevData => ({
+          ...prevData,
+          quotes: data.quotes || prevData.quotes
+        }));
+        setIsConnected(true);
+      }
+    };
+
+    const handleWebSocketError = (error) => {
+      console.error('WebSocket connection error:', error);
+      setIsConnected(false);
+    };
+
+    wsRef.current = new MarketDataWebSocket(handleWebSocketMessage, handleWebSocketError);
+    wsRef.current.connect(['SPY', 'QQQ', 'VIX', 'DXY']);
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.disconnect();
+      }
+    };
   }, [privacyToken]);
 
   // Handle trend analysis with privacy protection
@@ -40,6 +185,15 @@ const TheSignal = ({ neurodiversityMode, privacyToken, specialKitActive }) => {
         section: 'signal',
         action: 'trend_analysis',
         trend: trend.id,
+        timestamp: Date.now()
+      });
+
+      // Track personalization data
+      PersonalizationEngine.trackReadingBehavior({
+        section: 'signal',
+        action: 'trend_click',
+        content_id: trend.id,
+        content_type: 'market_trend',
         timestamp: Date.now()
       });
 
@@ -65,90 +219,77 @@ const TheSignal = ({ neurodiversityMode, privacyToken, specialKitActive }) => {
     return NeurodiversityOptimizer.optimizeContent(optimizationProps);
   };
 
-  // Mock signal data for demonstration
-  const mockSignalData = {
+  // Generate quantum signature for API authentication
+  const generateQuantumSignature = async (endpoint) => {
+    const timestamp = Date.now();
+    const payload = `${endpoint}-${timestamp}-${privacyToken}`;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(payload);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  // Fallback data structure for offline mode
+  const fallbackSignalData = {
     marketTrends: [
       {
-        id: 'ai-automation',
-        title: 'AI Automation Surge',
-        confidence: 94,
+        id: 'trend_001',
+        title: 'AI Infrastructure Expansion',
+        confidence: 85,
         impact: 'High',
-        timeframe: '3-6 months',
-        description: 'Enterprise AI adoption accelerating with 340% YoY growth in automation investments.',
+        timeframe: '6-12 months',
+        description: 'Significant investment in AI infrastructure driving market growth',
         keyMetrics: {
-          marketSize: '$127B',
-          growthRate: '42%',
+          marketSize: '$2.1T',
+          growthRate: '+24%',
           adoptionRate: '67%'
         },
         privacyCompliant: true
       },
       {
-        id: 'quantum-security',
-        title: 'Quantum Security Transition',
-        confidence: 87,
-        impact: 'Critical',
-        timeframe: '12-18 months',
-        description: 'Post-quantum cryptography becoming mandatory for financial institutions.',
-        keyMetrics: {
-          marketSize: '$89B',
-          growthRate: '156%',
-          adoptionRate: '23%'
-        },
-        privacyCompliant: true
-      },
-      {
-        id: 'neurodiversity-tech',
-        title: 'Neurodiversity-First Design',
-        confidence: 91,
+        id: 'trend_002',
+        title: 'Quantum Computing Breakthrough',
+        confidence: 72,
         impact: 'Medium',
-        timeframe: '6-12 months',
-        description: 'Inclusive design principles driving 28% higher user engagement rates.',
+        timeframe: '12-18 months',
+        description: 'Recent advances in quantum error correction showing commercial potential',
         keyMetrics: {
-          marketSize: '$34B',
-          growthRate: '73%',
-          adoptionRate: '45%'
+          marketSize: '$850B',
+          growthRate: '+45%',
+          adoptionRate: '23%'
         },
         privacyCompliant: true
       }
     ],
     emergingSignals: [
       {
-        id: 'privacy-first-commerce',
-        title: 'Privacy-First E-Commerce',
-        strength: 'Strong',
-        source: 'Multiple indicators',
-        description: 'Zero-data retention models showing 3x conversion improvements.'
-      },
-      {
-        id: 'decentralized-identity',
-        title: 'Decentralized Identity Systems',
-        strength: 'Moderate',
-        source: 'Tech adoption patterns',
-        description: 'Self-sovereign identity solutions gaining enterprise traction.'
+        id: 'signal_001',
+        title: 'Central Bank Digital Currency Adoption',
+        source: 'Financial Intelligence',
+        timestamp: new Date().toISOString(),
+        relevance: 'high',
+        summary: 'Multiple central banks accelerating CBDC development'
       }
     ],
     riskFactors: [
       {
-        id: 'regulatory-uncertainty',
-        title: 'AI Regulation Uncertainty',
-        severity: 'High',
-        probability: '78%',
-        impact: 'Market volatility in AI sector'
-      },
-      {
-        id: 'quantum-threat',
-        title: 'Quantum Computing Threat',
-        severity: 'Critical',
-        probability: '45%',
-        impact: 'Current encryption obsolescence'
+        id: 'risk_001',
+        category: 'Economic',
+        level: 'medium',
+        description: 'Inflation concerns affecting market stability',
+        probability: 0.65
       }
-    ]
+    ],
+    threatLevel: 'medium',
+    confidenceScore: 75,
+    lastUpdated: new Date().toISOString()
   };
 
-  const currentData = signalData || mockSignalData;
+  const currentData = signalData || fallbackSignalData;
 
   return (
-    <div className={`signal-section ${neurodiversityMode}-optimized`}>
+    <div ref={sectionRef} className={`signal-section ${neurodiversityMode}-optimized`}>
       {/* Section header */}
       <header className="signal-header">
         <div className="header-content">
@@ -174,12 +315,17 @@ const TheSignal = ({ neurodiversityMode, privacyToken, specialKitActive }) => {
         </div>
         
         <div className="signal-status">
-          <div className="status-indicator active">
+          <div className={`status-indicator ${isConnected ? 'active' : 'offline'}`}>
             <span className="indicator-dot"></span>
-            <span className="indicator-text">Live Signal Processing</span>
+            <span className="indicator-text">
+              {isConnected ? 'Live Market Data' : 'Offline Mode'}
+            </span>
           </div>
           <div className="last-update">
-            Last updated: {new Date().toLocaleTimeString()}
+            Last updated: {currentData.lastUpdated ? new Date(currentData.lastUpdated).toLocaleTimeString() : 'Never'}
+          </div>
+          <div className="confidence-score">
+            Confidence: {currentData.confidenceScore}%
           </div>
         </div>
       </header>

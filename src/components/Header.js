@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useQuantumSecurity } from '../security/QuantumSecurityManager';
 
 const Header = ({ 
@@ -17,6 +18,7 @@ const Header = ({
     { id: 2, type: 'security', message: 'Security scan completed', unread: true }
   ]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const navigate = useNavigate();
 
   const { securityLevel, threatLevel } = useQuantumSecurity();
 
@@ -36,10 +38,26 @@ const Header = ({
     { id: 'newsletters', label: 'Newsletters', icon: '📰' },
     { id: 'archive', label: 'Archive', icon: '📚' },
     { id: 'analytics', label: 'Analytics', icon: '📊' },
-    { id: 'admin', label: 'Admin', icon: '⚙️', adminOnly: true }
+    { id: 'admin', label: 'Admin', icon: '⚙️', adminOnly: true },
+    { id: 'schedule', label: 'Schedule', icon: '📅', adminOnly: true },
+    { id: 'assistant', label: 'AI Assistant', icon: '🤖', adminOnly: true }
   ];
 
   const handleNavigation = (pageId) => {
+    // Map navigation IDs to routes
+    const routeMap = {
+      'home': '/',
+      'newsletters': '/',
+      'archive': '/archive',
+      'analytics': '/analytics',
+      'admin': '/admin',
+      'schedule': '/schedule',
+      'assistant': '/assistant'
+    };
+    
+    const route = routeMap[pageId] || '/';
+    navigate(route);
+    
     if (onNavigate) {
       onNavigate(pageId);
     }

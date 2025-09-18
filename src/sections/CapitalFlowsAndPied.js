@@ -10,25 +10,35 @@ const CapitalFlowsAndPied = ({ neurodiversityMode, privacyToken, specialKitActiv
   const [privacyLevel, setPrivacyLevel] = useState('maximum');
   const [isTracking, setIsTracking] = useState(false);
 
-  // Initialize capital flows data with blockchain verification
+  // Initialize capital flows data with real-time API integration
   useEffect(() => {
     const loadCapitalData = async () => {
       try {
-        // Load investment data with blockchain verification
-        const data = await BlockchainVerification.loadVerifiedData('capital-flows', {
-          privacyToken,
-          verificationLevel: 'high',
-          dataRetention: 0
+        // Fetch real-time capital flows data
+        const data = await fetchCapitalFlowsData();
+        
+        // Apply differential privacy protection
+        const protectedData = await PrivacyFirstTracker.applyDifferentialPrivacy(data, {
+          epsilon: 0.1,
+          delta: 1e-5,
+          privacyToken
         });
-
-        setCapitalData(data);
+        
+        setCapitalData(protectedData);
       } catch (error) {
         console.error('Capital flows data loading failed:', error);
+        // Use fallback data on error
+        setCapitalData(fallbackCapitalData);
       }
     };
 
     loadCapitalData();
-  }, [privacyToken]);
+    
+    // Set up real-time updates every 2 minutes
+    const updateInterval = setInterval(loadCapitalData, 120000);
+    
+    return () => clearInterval(updateInterval);
+  }, [privacyToken, privacyLevel]);
 
   // Handle flow analysis with privacy protection
   const analyzeFlow = async (flow) => {
@@ -61,121 +71,97 @@ const CapitalFlowsAndPied = ({ neurodiversityMode, privacyToken, specialKitActiv
     }
   };
 
-  // Mock capital flows data for demonstration
-  const mockCapitalData = {
-    majorFlows: [
-      {
-        id: 'ai-venture-surge',
-        title: 'AI Venture Capital Surge',
-        amount: '$47.2B',
-        change: '+156%',
-        direction: 'inbound',
-        confidence: 96,
-        timeframe: 'Q4 2023 - Q1 2024',
-        description: 'Unprecedented venture capital influx into AI startups, particularly privacy-first and neurodiversity-focused solutions.',
-        keyPlayers: [
-          { name: 'Andreessen Horowitz', allocation: '$12.3B' },
-          { name: 'Sequoia Capital', allocation: '$8.7B' },
-          { name: 'Kleiner Perkins', allocation: '$6.1B' }
-        ],
-        sectors: [
-          { name: 'Privacy Tech', percentage: 34 },
-          { name: 'Neurodiversity AI', percentage: 28 },
-          { name: 'Quantum Security', percentage: 23 },
-          { name: 'Inclusive Design', percentage: 15 }
-        ],
-        riskLevel: 'Medium',
-        privacyCompliant: true
-      },
-      {
-        id: 'quantum-security-investment',
-        title: 'Quantum Security Investment Wave',
-        amount: '$23.8B',
-        change: '+234%',
-        direction: 'inbound',
-        confidence: 89,
-        timeframe: 'Q1 2024',
-        description: 'Enterprise and government investment in post-quantum cryptography solutions accelerating.',
-        keyPlayers: [
-          { name: 'Government Agencies', allocation: '$9.2B' },
-          { name: 'Financial Institutions', allocation: '$7.4B' },
-          { name: 'Tech Giants', allocation: '$7.2B' }
-        ],
-        sectors: [
-          { name: 'Post-Quantum Crypto', percentage: 45 },
-          { name: 'Quantum Key Distribution', percentage: 32 },
-          { name: 'Quantum Random Generators', percentage: 23 }
-        ],
-        riskLevel: 'Low',
-        privacyCompliant: true
-      },
-      {
-        id: 'privacy-first-commerce',
-        title: 'Privacy-First Commerce Funding',
-        amount: '$18.6B',
-        change: '+89%',
-        direction: 'inbound',
-        confidence: 92,
-        timeframe: 'Q4 2023 - Q1 2024',
-        description: 'Zero-data retention e-commerce platforms attracting significant investment.',
-        keyPlayers: [
-          { name: 'Index Ventures', allocation: '$5.2B' },
-          { name: 'Accel Partners', allocation: '$4.8B' },
-          { name: 'Bessemer Venture', allocation: '$4.1B' }
-        ],
-        sectors: [
-          { name: 'Zero-Data Platforms', percentage: 42 },
-          { name: 'Decentralized Commerce', percentage: 31 },
-          { name: 'Privacy Analytics', percentage: 27 }
-        ],
-        riskLevel: 'Medium',
-        privacyCompliant: true
-      }
-    ],
-    emergingOpportunities: [
-      {
-        id: 'neurodiversity-tech-fund',
-        title: 'Neurodiversity Tech Fund Launch',
-        amount: '$2.3B',
-        stage: 'Early',
-        description: 'First dedicated fund for neurodiversity-inclusive technology solutions.',
-        timeline: '6-12 months'
-      },
-      {
-        id: 'quantum-startup-accelerator',
-        title: 'Quantum Startup Accelerator',
-        amount: '$890M',
-        stage: 'Formation',
-        description: 'Specialized accelerator for quantum computing and security startups.',
-        timeline: '3-6 months'
-      }
-    ],
-    marketIndicators: [
-      {
-        id: 'privacy-premium',
-        name: 'Privacy Premium Index',
-        value: 147,
-        change: '+23%',
-        description: 'Premium investors pay for privacy-compliant solutions'
-      },
-      {
-        id: 'neurodiversity-multiplier',
-        name: 'Neurodiversity Value Multiplier',
-        value: 2.8,
-        change: '+67%',
-        description: 'Valuation multiplier for neurodiversity-inclusive companies'
-      },
-      {
-        id: 'quantum-readiness-score',
-        name: 'Quantum Readiness Score',
-        value: 73,
-        change: '+156%',
-        description: 'Market readiness for quantum-secure solutions'
-      }
-    ]
+  // Production API configuration for capital flows data
+  const CAPITAL_API_CONFIG = {
+    baseUrl: process.env.REACT_APP_CAPITAL_API_URL || 'https://capital.piperdispatch.com',
+    version: 'v2',
+    endpoints: {
+      majorFlows: '/major-flows',
+      emergingTrends: '/emerging-trends',
+      riskAssessment: '/risk-assessment',
+      verification: '/blockchain-verify'
+    }
   };
 
-  const currentData = capitalData || mockCapitalData;
+  // Real-time capital flows data fetching
+  const fetchCapitalFlowsData = async () => {
+    try {
+      const [flowsData, trendsData, riskData] = await Promise.all([
+        fetchMajorFlows(),
+        fetchEmergingTrends(),
+        fetchRiskAssessment()
+      ]);
+
+      return {
+        majorFlows: flowsData,
+        emergingTrends: trendsData,
+        riskFactors: riskData,
+        lastUpdated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Capital flows data fetch failed:', error);
+      throw error;
+    }
+  };
+
+  // Fetch major capital flows with blockchain verification
+  const fetchMajorFlows = async () => {
+    const response = await fetch(`${CAPITAL_API_CONFIG.baseUrl}${CAPITAL_API_CONFIG.endpoints.majorFlows}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('capitalToken')}`,
+        'X-Blockchain-Verify': 'true',
+        'X-Privacy-Level': privacyLevel,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Major flows fetch failed: ${response.status}`);
+    const data = await response.json();
+    
+    // Verify data integrity with blockchain
+    const isVerified = await BlockchainVerification.verifyDataIntegrity(data);
+    if (!isVerified) throw new Error('Data integrity verification failed');
+    
+    return data;
+  };
+
+  // Fetch emerging investment trends
+  const fetchEmergingTrends = async () => {
+    const response = await fetch(`${CAPITAL_API_CONFIG.baseUrl}${CAPITAL_API_CONFIG.endpoints.emergingTrends}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('capitalToken')}`,
+        'X-Privacy-Level': privacyLevel,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Emerging trends fetch failed: ${response.status}`);
+    return await response.json();
+  };
+
+  // Fetch risk assessment data
+  const fetchRiskAssessment = async () => {
+    const response = await fetch(`${CAPITAL_API_CONFIG.baseUrl}${CAPITAL_API_CONFIG.endpoints.riskAssessment}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('capitalToken')}`,
+        'X-Privacy-Level': privacyLevel,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Risk assessment fetch failed: ${response.status}`);
+    return await response.json();
+  };
+
+  // Fallback data structure for offline mode
+  const fallbackCapitalData = {
+    majorFlows: [],
+    emergingTrends: [],
+    riskFactors: [],
+    lastUpdated: new Date().toISOString()
+  };
+
+  const currentData = capitalData || fallbackCapitalData;
 
   return (
     <div className={`capital-flows-section ${neurodiversityMode}-optimized`}>

@@ -10,25 +10,34 @@ const OnTheEdge = ({ neurodiversityMode, privacyToken, specialKitActive }) => {
   const [technologyFilter, setTechnologyFilter] = useState('all');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Initialize edge technology data
+  // Initialize edge technology data with real-time API integration
   useEffect(() => {
     const loadEdgeData = async () => {
       try {
-        // Load cutting-edge technology data with privacy-first processing
-        const data = await EdgeTechnologyAnalyzer.loadBreakthroughData('edge-tech', {
-          privacyToken,
-          technologyMetrics: true,
-          dataRetention: 0
+        // Fetch real-time Edge Technology data
+        const data = await fetchEdgeData();
+        
+        // Apply differential privacy protection
+        const protectedData = await PrivacyFirstTracker.applyDataProtection(data, {
+          technologyFocus: true,
+          privacyToken
         });
 
-        setEdgeData(data);
+        setEdgeData(protectedData);
       } catch (error) {
         console.error('Edge technology data loading failed:', error);
+        // Use fallback data on error
+        setEdgeData(fallbackEdgeData);
       }
     };
 
     loadEdgeData();
-  }, [privacyToken]);
+    
+    // Set up real-time updates every 4 minutes
+    const updateInterval = setInterval(loadEdgeData, 4 * 60 * 1000);
+    
+    return () => clearInterval(updateInterval);
+  }, [privacyToken, analysisMode, technologyFilter]);
 
   // Handle technology analysis with privacy protection
   const analyzeTechnology = async (technology) => {
@@ -61,43 +70,95 @@ const OnTheEdge = ({ neurodiversityMode, privacyToken, specialKitActive }) => {
     }
   };
 
-  // Mock edge technology data for demonstration
-  const mockEdgeData = {
-    breakthroughTechnologies: [
-      {
-        id: 'quantum-neural-networks',
-        title: 'Quantum Neural Networks',
-        category: 'Quantum Computing',
-        breakthroughLevel: 'Revolutionary',
-        maturityStage: 'Research',
-        timeToMarket: '3-5 years',
-        disruptionPotential: 98,
-        description: 'Quantum-enhanced neural networks that process information using quantum superposition and entanglement, offering exponential speedups for AI tasks while maintaining privacy through quantum encryption.',
-        technicalMetrics: {
-          processingSpeed: '10,000x faster',
-          energyEfficiency: '99.7%',
-          accuracyImprovement: '847%',
-          privacyLevel: 'Quantum-secured',
-          neurodiversityScore: 94
-        },
-        keyInnovators: [
-          { name: 'Quantum AI Labs', role: 'Research Leader', focus: 'Quantum-Classical Hybrid Systems' },
-          { name: 'Privacy Quantum Institute', role: 'Privacy Technology', focus: 'Quantum Encryption' },
-          { name: 'Inclusive Quantum Computing', role: 'Accessibility Partner', focus: 'Neurodiversity Integration' }
-        ],
-        applications: [
-          'Privacy-preserving AI training',
-          'Quantum-secured financial modeling',
-          'Neurodiversity-optimized interfaces',
-          'Sustainable quantum computing',
-          'Real-time language translation',
-          'Quantum-enhanced drug discovery'
-        ],
-        challenges: [
-          'Quantum decoherence management',
-          'Scalability to practical systems',
-          'Integration with classical infrastructure',
-          'Talent acquisition and training'
+  // Production API configuration for Edge Technology data
+  const EDGE_API_CONFIG = {
+    baseUrl: process.env.REACT_APP_EDGE_API_URL || 'https://edge.piperdispatch.com',
+    version: 'v2',
+    endpoints: {
+      breakthroughs: '/breakthrough-technologies',
+      analysis: '/technology-analysis',
+      trends: '/emerging-trends',
+      disruption: '/disruption-metrics'
+    }
+  };
+
+  // Real-time Edge Technology data fetching
+  const fetchEdgeData = async () => {
+    try {
+      const [breakthroughData, analysisData, trendsData] = await Promise.all([
+        fetchBreakthroughTechnologies(),
+        fetchTechnologyAnalysis(),
+        fetchEmergingTrends()
+      ]);
+
+      return {
+        breakthroughTechnologies: breakthroughData,
+        technologyAnalysis: analysisData,
+        emergingTrends: trendsData,
+        lastUpdated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Edge technology data fetch failed:', error);
+      throw error;
+    }
+  };
+
+  // Fetch breakthrough technologies with privacy protection
+  const fetchBreakthroughTechnologies = async () => {
+    const response = await fetch(`${EDGE_API_CONFIG.baseUrl}${EDGE_API_CONFIG.endpoints.breakthroughs}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('edgeToken')}`,
+        'X-Privacy-Level': 'maximum',
+        'X-Technology-Filter': technologyFilter,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Breakthrough technologies fetch failed: ${response.status}`);
+    const data = await response.json();
+    
+    // Apply technology-focused privacy protection
+    return await PrivacyFirstTracker.applyDataProtection(data, {
+      technologyFocus: true,
+      privacyToken
+    });
+  };
+
+  // Fetch technology analysis data
+  const fetchTechnologyAnalysis = async () => {
+    const response = await fetch(`${EDGE_API_CONFIG.baseUrl}${EDGE_API_CONFIG.endpoints.analysis}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('edgeToken')}`,
+        'X-Analysis-Mode': analysisMode,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Technology analysis fetch failed: ${response.status}`);
+    return await response.json();
+  };
+
+  // Fetch emerging trends data
+  const fetchEmergingTrends = async () => {
+    const response = await fetch(`${EDGE_API_CONFIG.baseUrl}${EDGE_API_CONFIG.endpoints.trends}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('edgeToken')}`,
+        'X-Privacy-Level': 'maximum',
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Emerging trends fetch failed: ${response.status}`);
+    return await response.json();
+  };
+
+  // Fallback data structure for offline mode
+  const fallbackEdgeData = {
+    breakthroughTechnologies: [],
+    technologyAnalysis: [],
+    emergingTrends: [],
+    lastUpdated: new Date().toISOString()
+  };
         ],
         privacyCompliant: true,
         neurodiversityOptimized: true,
@@ -306,7 +367,7 @@ const OnTheEdge = ({ neurodiversityMode, privacyToken, specialKitActive }) => {
     }
   };
 
-  const currentData = edgeData || mockEdgeData;
+  const currentData = edgeData || fallbackEdgeData;
 
   // Filter technologies based on selected filter
   const filteredTechnologies = currentData.breakthroughTechnologies.filter(tech => {

@@ -10,25 +10,34 @@ const OatsSection = ({ neurodiversityMode, privacyToken, specialKitActive }) => 
   const [impactFilter, setImpactFilter] = useState('all');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Initialize oats data with sustainability analysis
+  // Initialize oats data with real-time API integration
   useEffect(() => {
     const loadOatsData = async () => {
       try {
-        // Load sustainability data with privacy-first processing
-        const data = await SustainabilityAnalyzer.loadSustainableData('oats', {
-          privacyToken,
-          sustainabilityMetrics: true,
-          dataRetention: 0
+        // Fetch real-time OATS data
+        const data = await fetchOatsData();
+        
+        // Apply differential privacy protection
+        const protectedData = await PrivacyFirstTracker.applyDataProtection(data, {
+          sustainabilityFocus: true,
+          privacyToken
         });
 
-        setOatsData(data);
+        setOatsData(protectedData);
       } catch (error) {
-        console.error('Oats data loading failed:', error);
+        console.error('OATS data loading failed:', error);
+        // Use fallback data on error
+        setOatsData(fallbackOatsData);
       }
     };
 
     loadOatsData();
-  }, [privacyToken]);
+    
+    // Set up real-time updates every 5 minutes
+    const updateInterval = setInterval(loadOatsData, 5 * 60 * 1000);
+    
+    return () => clearInterval(updateInterval);
+  }, [privacyToken, sustainabilityMode, impactFilter]);
 
   // Handle initiative analysis with privacy protection
   const analyzeInitiative = async (initiative) => {
@@ -61,43 +70,96 @@ const OatsSection = ({ neurodiversityMode, privacyToken, specialKitActive }) => 
     }
   };
 
-  // Mock oats data for demonstration
-  const mockOatsData = {
+  // Production API configuration for OATS data
+  const OATS_API_CONFIG = {
+    baseUrl: process.env.REACT_APP_OATS_API_URL || 'https://oats.piperdispatch.com',
+    version: 'v2',
+    endpoints: {
+      innovations: '/sustainable-innovations',
+      impactAnalysis: '/impact-analysis',
+      sdgTracking: '/sdg-tracking',
+      sustainability: '/sustainability-metrics'
+    }
+  };
+
+  // Real-time OATS data fetching
+  const fetchOatsData = async () => {
+    try {
+      const [innovationsData, impactData, sdgData] = await Promise.all([
+        fetchSustainableInnovations(),
+        fetchImpactAnalysis(),
+        fetchSDGTracking()
+      ]);
+
+      return {
+        sustainableInnovations: innovationsData,
+        impactAnalysis: impactData,
+        sdgTracking: sdgData,
+        lastUpdated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('OATS data fetch failed:', error);
+      throw error;
+    }
+  };
+
+  // Fetch sustainable innovations with privacy protection
+  const fetchSustainableInnovations = async () => {
+    const response = await fetch(`${OATS_API_CONFIG.baseUrl}${OATS_API_CONFIG.endpoints.innovations}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('oatsToken')}`,
+        'X-Privacy-Level': 'maximum',
+        'X-Impact-Filter': impactFilter,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Sustainable innovations fetch failed: ${response.status}`);
+    const data = await response.json();
+    
+    // Apply sustainability-focused privacy protection
+    return await PrivacyFirstTracker.applyDataProtection(data, {
+      sustainabilityFocus: true,
+      privacyToken
+    });
+  };
+
+  // Fetch impact analysis data
+  const fetchImpactAnalysis = async () => {
+    const response = await fetch(`${OATS_API_CONFIG.baseUrl}${OATS_API_CONFIG.endpoints.impactAnalysis}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('oatsToken')}`,
+        'X-Sustainability-Mode': sustainabilityMode,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`Impact analysis fetch failed: ${response.status}`);
+    return await response.json();
+  };
+
+  // Fetch SDG tracking data
+  const fetchSDGTracking = async () => {
+    const response = await fetch(`${OATS_API_CONFIG.baseUrl}${OATS_API_CONFIG.endpoints.sdgTracking}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('oatsToken')}`,
+        'X-Privacy-Level': 'maximum',
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`SDG tracking fetch failed: ${response.status}`);
+    return await response.json();
+  };
+
+  // Fallback data structure for offline mode
+  const fallbackOatsData = {
     sustainableInnovations: [
-      {
-        id: 'carbon-negative-computing',
-        title: 'Carbon-Negative Computing Infrastructure',
-        category: 'Green Technology',
-        impactLevel: 'Revolutionary',
-        maturityStage: 'Pilot',
-        timeToScale: '12-18 months',
-        description: 'Computing infrastructure that removes more carbon from atmosphere than it produces, powered by renewable energy and optimized for neurodivergent users.',
-        sustainabilityMetrics: {
-          carbonReduction: '-150%',
-          energyEfficiency: '94%',
-          renewableEnergy: '100%',
-          circularityScore: '89%'
-        },
-        innovators: [
-          { name: 'GreenCloud Systems', role: 'Infrastructure Provider' },
-          { name: 'Carbon Capture Tech', role: 'Carbon Technology' },
-          { name: 'Inclusive Design Lab', role: 'Accessibility Partner' }
-        ],
-        applications: [
-          'Privacy-first data centers',
-          'Neurodiversity-optimized cloud services',
-          'Carbon-negative AI processing',
-          'Sustainable blockchain networks'
-        ],
-        privacyCompliant: true,
-        neurodiversityOptimized: true,
-        sdgAlignment: [7, 9, 13, 15] // UN SDG goals
-      },
       {
         id: 'regenerative-agriculture-ai',
         title: 'Regenerative Agriculture AI Platform',
-        category: 'AgTech',
-        impactLevel: 'High',
+        category: 'Agriculture',
+        impactLevel: 'Revolutionary',
         maturityStage: 'Production',
         timeToScale: 'Available Now',
         description: 'AI-powered platform that optimizes regenerative farming practices while protecting farmer privacy and supporting neurodivergent agricultural workers.',
@@ -225,7 +287,7 @@ const OatsSection = ({ neurodiversityMode, privacyToken, specialKitActive }) => 
     }
   };
 
-  const currentData = oatsData || mockOatsData;
+  const currentData = oatsData || fallbackOatsData;
 
   // Filter initiatives based on selected filter
   const filteredInitiatives = currentData.sustainableInnovations.filter(initiative => {

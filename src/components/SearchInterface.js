@@ -6,22 +6,57 @@ const SearchInterface = ({ onSearch, placeholder = "Search..." }) => {
   const [isActive, setIsActive] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
 
-  useEffect(() => {
-    if (query.length > 2) {
-      // Simulate search suggestions
-      const mockSuggestions = [
-        'Market Analysis',
-        'Tech Trends',
-        'Investment Insights',
-        'Economic Indicators'
-      ].filter(item => 
-        item.toLowerCase().includes(query.toLowerCase())
-      );
-      setSuggestions(mockSuggestions);
-    } else {
-      setSuggestions([]);
+  // API configuration for search suggestions
+  const SEARCH_API_CONFIG = {
+    baseUrl: process.env.REACT_APP_SEARCH_API_URL || 'https://api.piperdispatch.com',
+    endpoints: {
+      suggestions: '/v1/search/suggestions',
+      trending: '/v1/search/trending'
     }
-  }, [query]);
+  };
+
+  // Fetch intelligent search suggestions
+  const fetchSearchSuggestions = async (searchQuery) => {
+    try {
+      const response = await fetch(`${SEARCH_API_CONFIG.baseUrl}${SEARCH_API_CONFIG.endpoints.suggestions}?q=${encodeURIComponent(searchQuery)}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('searchToken')}`,
+          'X-Privacy-Level': 'minimal',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error(`Search suggestions failed: ${response.status}`);
+      const data = await response.json();
+      return data.suggestions || [];
+    } catch (error) {
+      console.error('Search suggestions fetch failed:', error);
+      // Fallback suggestions
+      return [
+        'Market Intelligence',
+        'Technology Trends',
+        'Investment Analysis',
+        'Economic Indicators',
+        'Innovation Reports'
+      ].filter(item => 
+        item.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+  };
+
+  useEffect(() => {
+     const getSuggestions = async () => {
+       if (query.length > 2) {
+         const suggestions = await fetchSearchSuggestions(query);
+         setSuggestions(suggestions.slice(0, 5)); // Limit to 5 suggestions
+       } else {
+         setSuggestions([]);
+       }
+     };
+ 
+     const debounceTimer = setTimeout(getSuggestions, 300);
+     return () => clearTimeout(debounceTimer);
+   }, [query]);
 
   const handleSearch = (searchQuery = query) => {
     if (onSearch) {

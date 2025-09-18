@@ -28,22 +28,101 @@ const PrivacySettings = ({
   const [exportProgress, setExportProgress] = useState(0);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
-  // Mock privacy settings
-  const mockPrivacySettings = {
+  // Privacy API configuration
+  const PRIVACY_API_CONFIG = {
+    baseUrl: process.env.REACT_APP_PRIVACY_API_URL || '/api/privacy',
+    timeout: 10000,
+    retryAttempts: 3
+  };
+
+  // Fetch privacy settings from API
+  const fetchPrivacySettings = async () => {
+    try {
+      const response = await fetch(`${PRIVACY_API_CONFIG.baseUrl}/settings`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'X-Privacy-Mode': 'strict'
+        },
+        signal: AbortSignal.timeout(PRIVACY_API_CONFIG.timeout)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch privacy settings:', error);
+      return getFallbackPrivacySettings();
+    }
+  };
+
+  const fetchConsentStatus = async () => {
+    try {
+      const response = await fetch(`${PRIVACY_API_CONFIG.baseUrl}/consent`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'X-Privacy-Mode': 'strict'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch consent status:', error);
+      return getFallbackConsentStatus();
+    }
+  };
+
+  const fetchDataRequests = async () => {
+    try {
+      const response = await fetch(`${PRIVACY_API_CONFIG.baseUrl}/data-requests`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'X-Privacy-Mode': 'strict'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch data requests:', error);
+      return getFallbackDataRequests();
+    }
+  };
+
+  const getAuthToken = () => {
+    return localStorage.getItem('authToken') || 'demo-token';
+  };
+
+  // Fallback privacy settings
+  const getFallbackPrivacySettings = () => ({
     dataCollection: {
-      analytics: true,
-      personalization: true,
+      analytics: false,
+      personalization: false,
       marketing: false,
       thirdParty: false,
       location: false,
-      deviceInfo: true,
+      deviceInfo: false,
       behaviorTracking: false,
       crossSiteTracking: false
     },
     dataSharing: {
       partners: false,
       advertisers: false,
-      analytics: true,
+      analytics: false,
       socialMedia: false,
       research: false,
       legal: true
@@ -51,79 +130,76 @@ const PrivacySettings = ({
     communication: {
       newsletter: true,
       promotions: false,
-      surveys: true,
+      surveys: false,
       updates: true,
       security: true,
       thirdPartyOffers: false
     },
     visibility: {
-      profile: 'public',
-      activity: 'friends',
+      profile: 'private',
+      activity: 'private',
       email: 'private',
-      stats: 'public',
+      stats: 'private',
       preferences: 'private'
     },
     retention: {
-      accountData: '2 years',
-      activityLogs: '1 year',
-      analytics: '6 months',
-      cookies: '30 days',
-      backups: '90 days'
+      accountData: '1 year',
+      activityLogs: '6 months',
+      analytics: '3 months',
+      cookies: '7 days',
+      backups: '30 days'
     }
-  };
+  });
 
-  const mockConsentStatus = {
+  const getFallbackConsentStatus = () => ({
     essential: { granted: true, required: true, description: 'Required for basic functionality' },
-    analytics: { granted: true, required: false, description: 'Help us improve our service' },
+    analytics: { granted: false, required: false, description: 'Help us improve our service' },
     marketing: { granted: false, required: false, description: 'Personalized content and ads' },
-    personalization: { granted: true, required: false, description: 'Customize your experience' },
+    personalization: { granted: false, required: false, description: 'Customize your experience' },
     social: { granted: false, required: false, description: 'Social media integration' },
     thirdParty: { granted: false, required: false, description: 'Third-party services' }
-  };
+  });
 
-  const mockCookieSettings = {
-    essential: { enabled: true, locked: true, count: 5 },
-    functional: { enabled: true, locked: false, count: 3 },
-    analytics: { enabled: true, locked: false, count: 7 },
+  const getFallbackCookieSettings = () => ({
+    essential: { enabled: true, locked: true, count: 2 },
+    functional: { enabled: false, locked: false, count: 0 },
+    analytics: { enabled: false, locked: false, count: 0 },
     marketing: { enabled: false, locked: false, count: 0 },
     social: { enabled: false, locked: false, count: 0 }
-  };
+  });
 
-  const mockDataRequests = [
+  const getFallbackDataRequests = () => [
     {
-      id: 'req_001',
-      type: 'export',
-      status: 'completed',
-      requestDate: '2024-01-10T10:00:00Z',
-      completedDate: '2024-01-12T15:30:00Z',
-      description: 'Full data export'
-    },
-    {
-      id: 'req_002',
-      type: 'deletion',
+      id: 'fallback_001',
+      type: 'info',
       status: 'pending',
-      requestDate: '2024-01-14T09:15:00Z',
-      description: 'Delete old activity logs'
-    },
-    {
-      id: 'req_003',
-      type: 'correction',
-      status: 'processing',
-      requestDate: '2024-01-13T14:20:00Z',
-      description: 'Update profile information'
+      requestDate: new Date().toISOString(),
+      completedDate: null,
+      description: 'Privacy information request'
     }
   ];
 
   useEffect(() => {
     const loadPrivacyData = async () => {
       setIsLoading(true);
-      // Simulate API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setPrivacySettings(mockPrivacySettings);
-      setConsentStatus(mockConsentStatus);
-      setCookieSettings(mockCookieSettings);
-      setDataRequests(mockDataRequests);
+      try {
+        const [settings, consent, requests] = await Promise.all([
+          fetchPrivacySettings(),
+          fetchConsentStatus(),
+          fetchDataRequests()
+        ]);
+        
+        setPrivacySettings(settings);
+        setConsentStatus(consent);
+        setCookieSettings(getFallbackCookieSettings());
+        setDataRequests(requests);
+      } catch (error) {
+        console.error('Failed to load privacy data:', error);
+        setPrivacySettings(getFallbackPrivacySettings());
+        setConsentStatus(getFallbackConsentStatus());
+        setCookieSettings(getFallbackCookieSettings());
+        setDataRequests(getFallbackDataRequests());
+      }
       setIsLoading(false);
     };
 
