@@ -1,5 +1,9 @@
 # Piper Dispatch Special Kit
 
+## Deployment Status
+
+This project is configured for automated deployment to Google Cloud Run using GitHub Actions.
+
 ## Executive Summary
 
 The Piper Dispatch Special Kit is a privacy-first implementation engine that transforms newsletter insights into measurable business outcomes. Built with neurodiversity optimization and GDPR-Plus compliance, it delivers 300% newsletter value amplification through actionable implementation pathways.
