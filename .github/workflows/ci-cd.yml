@@ -1,0 +1,408 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+env:
+  NODE_VERSION: '18.x'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'" --health-interval 10s --health-timeout 5s --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+      
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        npm install -g artillery
+
+    - name: Run unit tests
+      run: |
+        npm run test:unit
+      env:
+        NODE_ENV: test
+        MONGODB_URI: mongodb://localhost:27017/testdb
+        REDIS_URL: redis://localhost:6379
+        DATABASE_URL: postgres://postgres:testpassword@localhost:5432/testdb
+        JWT_SECRET: test-jwt-secret
+        STRIPE_SECRET_KEY: sk_test_dummy
+        SENDGRID_API_KEY: SG.test_dummy
+        SENTRY_DSN: https://test@sentry.io/test
+
+    - name: Run integration tests
+      run: |
+        npm run test:integration
+      env:
+        NODE_ENV: test
+        MONGODB_URI: mongodb://localhost:27017/testdb
+        REDIS_URL: redis://localhost:6379
+        DATABASE_URL: postgres://postgres:testpassword@localhost:5432/testdb
+        JWT_SECRET: test-jwt-secret
+        STRIPE_SECRET_KEY: sk_test_dummy
+        SENDGRID_API_KEY: SG.test_dummy
+        SENTRY_DSN: https://test@sentry.io/test
+
+    - name: Upload test coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+
+    - name: Run npm audit
+      run: npm audit --audit-level=high
+
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/init@v2
+      with:
+        languages: javascript
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+    - name: OWASP ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.7.0
+      with:
+        target: 'http://localhost:3000'
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a'
+
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: test
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        npm install -g artillery
+
+    - name: Start application
+      run: |
+        npm start &
+        sleep 30
+      env:
+        NODE_ENV: production
+        MONGODB_URI: mongodb://localhost:27017/piper_newsletter
+        REDIS_URL: redis://localhost:6379
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    - name: Run Artillery performance tests
+      run: |
+        artillery run artillery/performance-test.yml
+
+    - name: Run load tests
+      run: |
+        artillery run artillery/load-test.yml
+
+    - name: Run stress tests
+      run: |
+        artillery run artillery/stress-test.yml
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [test, security-scan, performance-test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: |
+        npm run build
+        npm run build:docker
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: |
+          dist/
+          build/
+          Dockerfile
+          docker-compose.yml
+
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: docker-build
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+      
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        npx playwright install
+
+    - name: Start services with Docker Compose
+      run: |
+        docker-compose -f docker-compose.test.yml up -d
+        sleep 60
+
+    - name: Run E2E tests
+      run: |
+        npm run test:e2e
+      env:
+        PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
+
+    - name: Upload E2E test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: e2e-test-results
+        path: test-results/
+
+    - name: Upload E2E test report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: e2e-test-report
+        path: playwright-report/
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [test, security-scan, performance-test, e2e-tests]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Deploy to staging
+      run: |
+        aws ecs update-service --cluster staging-cluster --service piper-newsletter-staging --force-new-deployment
+
+    - name: Run smoke tests
+      run: |
+        curl -f https://staging.pipernewsletter.com/health || exit 1
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [test, security-scan, performance-test, e2e-tests]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Deploy to production
+      run: |
+        aws ecs update-service --cluster production-cluster --service piper-newsletter-production --force-new-deployment
+
+    - name: Run production smoke tests
+      run: |
+        curl -f https://pipernewsletter.com/health || exit 1
+
+    - name: Notify deployment success
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: 'Production deployment successful! 🚀'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+    - name: Cleanup test resources
+      run: |
+        echo "Cleaning up test resources..."
+        # Add cleanup commands here
+
+    - name: Cleanup Docker images
+      run: |
+        echo "Cleaning up Docker images..."
+        docker system prune -f
+
+    - name: Notify completion
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'CI/CD pipeline completed!'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

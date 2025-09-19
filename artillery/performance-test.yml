@@ -1,0 +1,252 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 50
+      name: "Ramp up load"
+    - duration: 300
+      arrivalRate: 100
+      name: "Sustained load"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  
+scenarios:
+  - name: "User Registration Flow"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "{{ $randomString() }}"
+            email: "{{ $randomString() }}@example.com"
+            password: "TestPassword123!"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 201
+      - think: 2
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "TestPassword123!"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+
+  - name: "Newsletter Creation Flow"
+    weight: 40
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "testuser@example.com"
+            password: "TestPassword123!"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/api/newsletters"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            title: "Performance Test Newsletter {{ $randomString() }}"
+            content: "This is a test newsletter created during performance testing"
+            template: "modern"
+          expect:
+            - statusCode: 201
+      - think: 3
+      - get:
+          url: "/api/newsletters"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Email Sending Flow"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "testuser@example.com"
+            password: "TestPassword123!"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/api/emails/send"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            to: "test@example.com"
+            subject: "Performance Test Email"
+            template: "welcome"
+          expect:
+            - statusCode: 200
+
+  - name: "Subscription Management Flow"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/subscriptions"
+          json:
+            email: "{{ $randomString() }}@example.com"
+            name: "{{ $randomString() }}"
+            preferences:
+              - "technology"
+              - "business"
+          expect:
+            - statusCode: 201
+      - think: 2
+      - get:
+          url: "/api/subscriptions/{{ email }}"
+          expect:
+            - statusCode: 200
+
+  - name: "API Health Check"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/health"
+          expect:
+            - statusCode: 200
+            - hasProperty: "status"
+      - think: 5
+      - get:
+          url: "/api/health/detailed"
+          expect:
+            - statusCode: 200
+            - hasProperty: "services"
+
+  - name: "Content Management Flow"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "testuser@example.com"
+            password: "TestPassword123!"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/api/content"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            title: "Test Content {{ $randomString() }}"
+            body: "This is test content for performance testing"
+            type: "article"
+          expect:
+            - statusCode: 201
+      - think: 2
+      - get:
+          url: "/api/content"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "User Profile Management"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "testuser@example.com"
+            password: "TestPassword123!"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - get:
+          url: "/api/users/profile"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - put:
+          url: "/api/users/profile"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            name: "Updated Name {{ $randomString() }}"
+            preferences:
+              newsletterFrequency: "weekly"
+          expect:
+            - statusCode: 200
+
+  - name: "Search Functionality"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/search?q={{ $randomString() }}&type=content"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/search?q=newsletter&type=newsletters"
+          expect:
+            - statusCode: 200
+
+  - name: "Analytics Endpoints"
+    weight: 5
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "testuser@example.com"
+            password: "TestPassword123!"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - get:
+          url: "/api/analytics/overview"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - get:
+          url: "/api/analytics/subscriptions"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+plugins:
+  expect: {}
+  metrics-by-endpoint: {}
+  
+ensure:
+  thresholds:
+    - http.response_time.mean: 500
+    - http.response_time.p95: 1000
+    - http.response_time.p99: 2000
+    - http.request_rate: 50
+    - http.codes.2xx: 0.95
+    - http.codes.4xx: 0.05
+    - http.codes.5xx: 0.01

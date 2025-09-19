@@ -1,0 +1,206 @@
+# Prometheus Alert Rules for Piper Newsletter System
+groups:
+  - name: application_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.job }}"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.job }}"
+
+      - alert: ApplicationDown
+        expr: up{job="piper-newsletter-app"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Application is down"
+          description: "{{ $labels.instance }} has been down for more than 2 minutes"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 90% on {{ $labels.instance }}"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is above 80% on {{ $labels.instance }}"
+
+  - name: database_alerts
+    rules:
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database is down"
+          description: "PostgreSQL database has been down for more than 2 minutes"
+
+      - alert: DatabaseConnectionsHigh
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connections"
+          description: "Database has {{ $value }} active connections"
+
+      - alert: DatabaseReplicationLag
+        expr: pg_replication_lag > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database replication lag"
+          description: "Replication lag is {{ $value }} seconds"
+
+  - name: cache_alerts
+    rules:
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache has been down for more than 2 minutes"
+
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is above 90%"
+
+  - name: infrastructure_alerts
+    rules:
+      - alert: DiskSpaceHigh
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is below 10% on {{ $labels.instance }}"
+
+      - alert: LoadAverageHigh
+        expr: node_load1 > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High load average"
+          description: "Load average is {{ $value }} on {{ $labels.instance }}"
+
+  - name: email_service_alerts
+    rules:
+      - alert: EmailQueueSizeHigh
+        expr: email_queue_size > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Email queue size high"
+          description: "Email queue has {{ $value }} pending emails"
+
+      - alert: EmailFailureRateHigh
+        expr: rate(email_send_failures_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High email failure rate"
+          description: "Email failure rate is {{ $value | humanizePercentage }}"
+
+  - name: payment_service_alerts
+    rules:
+      - alert: PaymentFailureRateHigh
+        expr: rate(payment_failures_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High payment failure rate"
+          description: "Payment failure rate is {{ $value | humanizePercentage }}"
+
+      - alert: StripeAPIErrors
+        expr: rate(stripe_api_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Stripe API errors"
+          description: "Stripe API error rate is {{ $value | humanizePercentage }}"
+
+  - name: security_alerts
+    rules:
+      - alert: HighFailedLoginAttempts
+        expr: rate(auth_failed_login_attempts_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High failed login attempts"
+          description: "Failed login attempts rate is {{ $value }} per second"
+
+      - alert: SuspiciousActivityDetected
+        expr: rate(security_suspicious_activities_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Suspicious activity detected"
+          description: "Suspicious activity rate is {{ $value }} per second"
+
+      - alert: RateLimitExceeded
+        expr: rate(rate_limit_exceeded_total[5m]) > 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Rate limit exceeded"
+          description: "Rate limit exceeded {{ $value }} times per second"
+
+  - name: ssl_certificate_alerts
+    rules:
+      - alert: SSLCertificateExpiringSoon
+        expr: ssl_certificate_expiry_seconds < 7 * 24 * 3600
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate expires in {{ $value | humanizeDuration }}"
+
+      - alert: SSLCertificateExpired
+        expr: ssl_certificate_expiry_seconds < 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SSL certificate expired"
+          description: "SSL certificate has expired"

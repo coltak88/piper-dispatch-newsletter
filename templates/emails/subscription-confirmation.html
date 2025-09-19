@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Confirmation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .subscription-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .plan-name {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .price {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .billing-cycle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .features {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .feature-item {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .feature-item::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+        .billing-info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            .title {
+                font-size: 20px;
+            }
+            .price {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎉 Subscription Confirmed!</div>
+            <h1 class="title">Welcome to Premium, {{userName}}!</h1>
+        </div>
+
+        <div class="content">
+            <p>Congratulations {{userName}}! Your subscription has been successfully activated and you're now part of our premium community.</p>
+
+            <div class="subscription-card">
+                <div class="plan-name">{{planName}}</div>
+                <div class="price">{{amount}} {{currency}}</div>
+                <div class="billing-cycle">{{billingCycle}} billing</div>
+            </div>
+
+            <div class="billing-info">
+                <strong>📅 Next Billing Date:</strong> {{nextBillingDate}}<br>
+                <small>Your subscription will automatically renew on this date unless cancelled.</small>
+            </div>
+
+            <div class="features">
+                <h3>🚀 Your Premium Features Include:</h3>
+                {{#each features}}
+                <div class="feature-item">{{this}}</div>
+                {{/each}}
+            </div>
+
+            <p>With your premium subscription, you'll now have access to advanced analytics, priority support, and unlimited newsletter campaigns. We're excited to help you take your email marketing to the next level!</p>
+
+            <div style="text-align: center;">
+                <a href="{{dashboardUrl}}" class="cta-button">Access Premium Dashboard</a>
+            </div>
+
+            <p><strong>Need help getting started?</strong> Check out our comprehensive guides and tutorials, or reach out to our premium support team for personalized assistance.</p>
+
+            <p>Thank you for choosing Piper Newsletter for your communication needs. We look forward to supporting your success!</p>
+
+            <p>Best regards,<br>
+            The Piper Newsletter Team</p>
+        </div>
+
+        <div class="footer">
+            <p>Questions about your subscription? Contact us at <a href="mailto:billing@pipernewsletter.com">billing@pipernewsletter.com</a></p>
+            <p>Manage your subscription: <a href="{{manageSubscriptionUrl}}">Subscription Settings</a></p>
+            <p>&copy; 2024 Piper Newsletter. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
