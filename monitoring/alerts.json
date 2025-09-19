@@ -1,0 +1,242 @@
+[
+  {
+    "displayName": "High Error Rate",
+    "conditions": [
+      {
+        "displayName": "Error rate above 5%",
+        "conditionThreshold": {
+          "filter": "metric.type=\"run.googleapis.com/request_count\" resource.type=\"cloud_run_revision\" resource.label.\"service_name\"=\"piper-dispatch-main\" metric.label.\"response_code_class\"!=\"2xx\"",
+          "comparison": "COMPARISON_GT",
+          "thresholdValue": 0.05,
+          "duration": "300s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_RATE"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email"],
+    "alertStrategy": {
+      "autoClose": "1800s"
+    }
+  },
+  {
+    "displayName": "High Response Latency",
+    "conditions": [
+      {
+        "displayName": "95th percentile latency above 2 seconds",
+        "conditionThreshold": {
+          "filter": "metric.type=\"run.googleapis.com/request_latencies\" resource.type=\"cloud_run_revision\" resource.label.\"service_name\"=\"piper-dispatch-main\"",
+          "comparison": "COMPARISON_GT",
+          "thresholdValue": 2000,
+          "duration": "300s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_PERCENTILE_95"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email"],
+    "alertStrategy": {
+      "autoClose": "1800s"
+    }
+  },
+  {
+    "displayName": "High CPU Utilization",
+    "conditions": [
+      {
+        "displayName": "CPU utilization above 80%",
+        "conditionThreshold": {
+          "filter": "metric.type=\"run.googleapis.com/container/cpu/utilizations\" resource.type=\"cloud_run_revision\" resource.label.\"service_name\"=\"piper-dispatch-main\"",
+          "comparison": "COMPARISON_GT",
+          "thresholdValue": 0.8,
+          "duration": "300s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_MEAN"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email"],
+    "alertStrategy": {
+      "autoClose": "1800s"
+    }
+  },
+  {
+    "displayName": "High Memory Utilization",
+    "conditions": [
+      {
+        "displayName": "Memory utilization above 85%",
+        "conditionThreshold": {
+          "filter": "metric.type=\"run.googleapis.com/container/memory/utilizations\" resource.type=\"cloud_run_revision\" resource.label.\"service_name\"=\"piper-dispatch-main\"",
+          "comparison": "COMPARISON_GT",
+          "thresholdValue": 0.85,
+          "duration": "300s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_MEAN"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email"],
+    "alertStrategy": {
+      "autoClose": "1800s"
+    }
+  },
+  {
+    "displayName": "Service Down",
+    "conditions": [
+      {
+        "displayName": "No successful requests",
+        "conditionThreshold": {
+          "filter": "metric.type=\"run.googleapis.com/request_count\" resource.type=\"cloud_run_revision\" resource.label.\"service_name\"=\"piper-dispatch-main\" metric.label.\"response_code_class\"=\"2xx\"",
+          "comparison": "COMPARISON_LT",
+          "thresholdValue": 1,
+          "duration": "300s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_RATE"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email", "projects/sarvajaya-genesis-protocol/notification-channels/slack"],
+    "alertStrategy": {
+      "autoClose": "1800s"
+    }
+  },
+  {
+    "displayName": "Database Connection Issues",
+    "conditions": [
+      {
+        "displayName": "Database connection failures",
+        "conditionThreshold": {
+          "filter": "metric.type=\"cloudsql.googleapis.com/database/mysql_connections\" resource.type=\"cloudsql_database\" resource.label.\"database_id\"=\"sarvajaya-genesis-protocol:piper-newsletter-db\"",
+          "comparison": "COMPARISON_LT",
+          "thresholdValue": 1,
+          "duration": "300s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_MEAN"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email"],
+    "alertStrategy": {
+      "autoClose": "1800s"
+    }
+  },
+  {
+    "displayName": "Database CPU Utilization",
+    "conditions": [
+      {
+        "displayName": "Database CPU above 90%",
+        "conditionThreshold": {
+          "filter": "metric.type=\"cloudsql.googleapis.com/database/cpu/utilization\" resource.type=\"cloudsql_database\" resource.label.\"database_id\"=\"sarvajaya-genesis-protocol:piper-newsletter-db\"",
+          "comparison": "COMPARISON_GT",
+          "thresholdValue": 0.9,
+          "duration": "300s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_MEAN"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email"],
+    "alertStrategy": {
+      "autoClose": "1800s"
+    }
+  },
+  {
+    "displayName": "Email Delivery Failures",
+    "conditions": [
+      {
+        "displayName": "Email bounce rate above 10%",
+        "conditionThreshold": {
+          "filter": "metric.type=\"sendgrid.googleapis.com/email/bounced\" resource.type=\"sendgrid_email\"",
+          "comparison": "COMPARISON_GT",
+          "thresholdValue": 0.1,
+          "duration": "300s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_RATE"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email"],
+    "alertStrategy": {
+      "autoClose": "1800s"
+    }
+  },
+  {
+    "displayName": "Payment Processing Issues",
+    "conditions": [
+      {
+        "displayName": "Payment failure rate above 15%",
+        "conditionThreshold": {
+          "filter": "metric.type=\"custom.googleapis.com/payment/failed\" resource.type=\"cloud_run_revision\" resource.label.\"service_name\"=\"piper-dispatch-main\"",
+          "comparison": "COMPARISON_GT",
+          "thresholdValue": 0.15,
+          "duration": "300s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_RATE"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email"],
+    "alertStrategy": {
+      "autoClose": "1800s"
+    }
+  },
+  {
+    "displayName": "SSL Certificate Expiry",
+    "conditions": [
+      {
+        "displayName": "SSL certificate expires in 30 days",
+        "conditionThreshold": {
+          "filter": "metric.type=\"custom.googleapis.com/ssl/certificate_expiry_days\" resource.type=\"cloud_run_revision\" resource.label.\"service_name\"=\"piper-dispatch-main\"",
+          "comparison": "COMPARISON_LT",
+          "thresholdValue": 30,
+          "duration": "3600s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "3600s",
+              "perSeriesAligner": "ALIGN_MEAN"
+            }
+          ]
+        }
+      }
+    ],
+    "notificationChannels": ["projects/sarvajaya-genesis-protocol/notification-channels/email"],
+    "alertStrategy": {
+      "autoClose": "86400s"
+    }
+  }
+]
