@@ -1,85 +1,56 @@
-# Piper Dispatch Newsletter - Production Dockerfile
-# Multi-stage build for optimized production deployment
-# Features: React app, quantum security, privacy-first architecture
+# Multi-stage build for Super Size Piper Newsletter
+FROM node:18-alpine AS base
 
-# Stage 1: Build environment
-FROM node:18-alpine AS builder
+# Install build dependencies
+RUN apk add --no-cache python3 make g++ git
 
 # Set working directory
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache \
-    git \
-    python3 \
-    make \
-    g++ \
-    && npm install -g npm@latest
-
 # Copy package files
-COPY package*.json ./
+COPY package.json ./
+COPY packages/core/package.json ./packages/core/
+COPY packages/special-kit/package.json ./packages/special-kit/
+COPY packages/api/package.json ./packages/api/
 
-# Install dependencies with security audit
-RUN npm ci --only=production --audit --audit-level=high
+# Install root dependencies
+RUN npm install --production=false
 
 # Copy source code
 COPY . .
 
-# Build application with optimizations
-ENV NODE_ENV=production
-ENV REACT_APP_BUILD_MODE=production
-ENV REACT_APP_QUANTUM_SECURITY=enabled
-ENV REACT_APP_PRIVACY_MODE=gdpr-plus
-
+# Build the application
 RUN npm run build
 
-# Stage 2: Production environment
-FROM nginx:1.25-alpine AS production
+# Production stage
+FROM node:18-alpine AS production
 
-# Install security updates
-RUN apk update && apk upgrade && apk add --no-cache \
-    curl \
-    ca-certificates \
-    && rm -rf /var/cache/apk/*
+# Install production dependencies
+RUN apk add --no-cache dumb-init
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S piper && \
-    adduser -S piper -u 1001 -G piper
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
 
-# Copy custom nginx configuration
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/default.conf /etc/nginx/conf.d/default.conf
+# Set working directory
+WORKDIR /app
 
-# Copy built application from builder stage
-COPY --from=builder --chown=piper:piper /app/build /usr/share/nginx/html
+# Copy built application
+COPY --from=base --chown=nextjs:nodejs /app .
 
-# Copy security headers configuration
-COPY docker/security-headers.conf /etc/nginx/conf.d/security-headers.conf
-
-# Create necessary directories
-RUN mkdir -p /var/cache/nginx /var/log/nginx /var/run && \
-    chown -R piper:piper /var/cache/nginx /var/log/nginx /var/run /usr/share/nginx/html
-
-# Set proper permissions
-RUN chmod -R 755 /usr/share/nginx/html
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+# Install production dependencies only
+RUN npm ci --production && npm cache clean --force
 
 # Switch to non-root user
-USER piper
+USER nextjs
 
 # Expose port
-EXPOSE 8080
+EXPOSE 3000
 
-# Labels for metadata
-LABEL maintainer="Piper Dispatch Team" \
-      version="1.0.0" \
-      description="Piper Dispatch Newsletter - Privacy-First Publication System" \
-      security.quantum="CRYSTALS-Kyber" \
-      privacy.compliance="GDPR-Plus" \
-      accessibility.wcag="2.1-AA"
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start the application
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "start"]

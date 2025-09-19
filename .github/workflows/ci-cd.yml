@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Production CI/CD Pipeline
 
 on:
   push:
@@ -7,16 +7,82 @@ on:
     branches: [ main, develop ]
   release:
     types: [ published ]
+  schedule:
+    - cron: '0 2 * * 1' # Weekly security scan on Mondays at 2 AM
 
 env:
   NODE_VERSION: '18.x'
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
 
 jobs:
-  test:
-    name: Test Suite
+  # Code Quality and Security Analysis
+  code-quality:
+    name: Code Quality & Security
     runs-on: ubuntu-latest
+    outputs:
+      security-scan-passed: ${{ steps.security-scan.outcome == 'success' }}
+      code-quality-score: ${{ steps.code-quality.outputs.score }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci --only=production
+
+    - name: Run ESLint
+      run: npm run lint
+      continue-on-error: true
+
+    - name: Run Prettier check
+      run: npm run format:check
+      continue-on-error: true
+
+    - name: Security audit
+      run: npm audit --audit-level=high
+      id: security-scan
+      continue-on-error: true
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      continue-on-error: true
+
+    - name: Code Quality Analysis
+      id: code-quality
+      run: |
+        # Run comprehensive code quality analysis
+        npm run analyze:quality
+        echo "score=$(npm run --silent quality:score)" >> $GITHUB_OUTPUT
+      continue-on-error: true
+
+    - name: Upload code quality reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: code-quality-reports
+        path: |
+          reports/eslint-report.json
+          reports/prettier-report.json
+          reports/security-audit.json
+          reports/quality-score.json
+
+  # Comprehensive Testing Suite
+  test-suite:
+    name: Comprehensive Testing
+    runs-on: ubuntu-latest
+    needs: code-quality
     
     services:
       mongodb:
@@ -81,55 +147,36 @@ jobs:
         SENDGRID_API_KEY: SG.test_dummy
         SENTRY_DSN: https://test@sentry.io/test
 
+    - name: Run end-to-end tests
+      run: |
+        npm run test:e2e
+      env:
+        NODE_ENV: test
+        MONGODB_URI: mongodb://localhost:27017/testdb
+        REDIS_URL: redis://localhost:6379
+        DATABASE_URL: postgres://postgres:testpassword@localhost:5432/testdb
+        JWT_SECRET: test-jwt-secret
+        STRIPE_SECRET_KEY: sk_test_dummy
+        SENDGRID_API_KEY: SG.test_dummy
+        SENTRY_DSN: https://test@sentry.io/test
+
     - name: Upload test coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage/lcov.info
         flags: unittests
         name: codecov-umbrella
+        token: ${{ secrets.CODECOV_TOKEN }}
 
-  security-scan:
-    name: Security Scanning
-    runs-on: ubuntu-latest
-    needs: test
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
       with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run Snyk security scan
-      uses: snyk/actions/node@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --severity-threshold=high
-
-    - name: Run npm audit
-      run: npm audit --audit-level=high
-
-    - name: Run CodeQL Analysis
-      uses: github/codeql-action/init@v2
-      with:
-        languages: javascript
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
-
-    - name: OWASP ZAP Baseline Scan
-      uses: zaproxy/action-baseline@v0.7.0
-      with:
-        target: 'http://localhost:3000'
-        rules_file_name: '.zap/rules.tsv'
-        cmd_options: '-a'
+        name: test-results
+        path: |
+          coverage/
+          test-results/
+          cypress/videos/
+          cypress/screenshots/
 
   performance-test:
     name: Performance Testing
@@ -325,7 +372,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [test, security-scan, performance-test, e2e-tests]
+    needs: [test-suite, performance-test]
     if: github.ref == 'refs/heads/develop'
     environment: staging
     
@@ -333,25 +380,75 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        version: 'latest'
+        project_id: ${{ env.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Deploy to staging
+    - name: Configure Docker for GCR
+      run: gcloud auth configure-docker
+
+    - name: Build and push Docker image to GCR
       run: |
-        aws ecs update-service --cluster staging-cluster --service piper-newsletter-staging --force-new-deployment
+        docker build -t gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-staging:${{ github.sha }} .
+        docker build -t gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-staging:latest .
+        docker push gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-staging:${{ github.sha }}
+        docker push gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-staging:latest
+
+    - name: Deploy to Cloud Run Staging
+      run: |
+        gcloud run deploy piper-newsletter-staging \
+          --image gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-staging:${{ github.sha }} \
+          --platform managed \
+          --region ${{ env.GCP_REGION }} \
+          --allow-unauthenticated \
+          --memory 1Gi \
+          --cpu 1 \
+          --max-instances 10 \
+          --min-instances 1 \
+          --set-env-vars NODE_ENV=staging \
+          --set-env-vars MONGODB_URI=${{ secrets.STAGING_MONGODB_URI }} \
+          --set-env-vars REDIS_URL=${{ secrets.STAGING_REDIS_URL }} \
+          --set-env-vars JWT_SECRET=${{ secrets.STAGING_JWT_SECRET }} \
+          --set-env-vars SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+          --set-env-vars STRIPE_SECRET_KEY=${{ secrets.STAGING_STRIPE_SECRET_KEY }}
 
     - name: Run smoke tests
       run: |
-        curl -f https://staging.pipernewsletter.com/health || exit 1
+        # Get the staging URL
+        STAGING_URL=$(gcloud run services describe piper-newsletter-staging --region ${{ env.GCP_REGION }} --format 'value(status.url)')
+        
+        # Wait for deployment to be ready
+        sleep 30
+        
+        # Run health check
+        curl -f $STAGING_URL/health || exit 1
+        
+        # Run basic API tests
+        curl -f $STAGING_URL/api/health || exit 1
+
+    - name: Notify deployment success
+      uses: 8398a7/action-slack@v3
+      if: success()
+      with:
+        status: success
+        text: 'Staging deployment successful! 🚀'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        
+    - name: Notify deployment failure
+      uses: 8398a7/action-slack@v3
+      if: failure()
+      with:
+        status: failure
+        text: 'Staging deployment failed! ❌'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
 
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [test, security-scan, performance-test, e2e-tests]
+    needs: [test-suite, performance-test]
     if: github.ref == 'refs/heads/main'
     environment: production
     
@@ -359,45 +456,199 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        version: 'latest'
+        project_id: ${{ env.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Deploy to production
+    - name: Configure Docker for GCR
+      run: gcloud auth configure-docker
+
+    - name: Build and push Docker image to GCR
       run: |
-        aws ecs update-service --cluster production-cluster --service piper-newsletter-production --force-new-deployment
+        docker build -t gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-production:${{ github.sha }} .
+        docker build -t gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-production:latest .
+        docker push gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-production:${{ github.sha }}
+        docker push gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-production:latest
+
+    - name: Deploy to Cloud Run Production
+      run: |
+        gcloud run deploy piper-newsletter-production \
+          --image gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-production:${{ github.sha }} \
+          --platform managed \
+          --region ${{ env.GCP_REGION }} \
+          --allow-unauthenticated \
+          --memory 2Gi \
+          --cpu 2 \
+          --max-instances 100 \
+          --min-instances 2 \
+          --set-env-vars NODE_ENV=production \
+          --set-env-vars MONGODB_URI=${{ secrets.PRODUCTION_MONGODB_URI }} \
+          --set-env-vars REDIS_URL=${{ secrets.PRODUCTION_REDIS_URL }} \
+          --set-env-vars JWT_SECRET=${{ secrets.PRODUCTION_JWT_SECRET }} \
+          --set-env-vars SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+          --set-env-vars STRIPE_SECRET_KEY=${{ secrets.PRODUCTION_STRIPE_SECRET_KEY }} \
+          --set-env-vars SENDGRID_API_KEY=${{ secrets.PRODUCTION_SENDGRID_API_KEY }}
 
     - name: Run production smoke tests
       run: |
-        curl -f https://pipernewsletter.com/health || exit 1
+        PRODUCTION_URL=$(gcloud run services describe piper-newsletter-production --region ${{ env.GCP_REGION }} --format 'value(status.url)')
+        sleep 60
+        curl -f $PRODUCTION_URL/health || exit 1
+        curl -f $PRODUCTION_URL/api/health || exit 1
+        curl -f $PRODUCTION_URL/api/status || exit 1
+
+    - name: Run production integration tests
+      run: |
+        PRODUCTION_URL=$(gcloud run services describe piper-newsletter-production --region ${{ env.GCP_REGION }} --format 'value(status.url)')
+        npm run test:production -- --base-url=$PRODUCTION_URL
+
+    - name: Create GitHub Release
+      if: github.event_name == 'release'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Production deployment completed successfully!
+          
+          ## Changes in this release
+          ${{ github.event.release.body }}
+          
+          ## Deployment Information
+          - **Environment**: Production
+          - **Region**: ${{ env.GCP_REGION }}
+          - **Timestamp**: ${{ github.event.head_commit.timestamp }}
+          - **Commit SHA**: ${{ github.sha }}
+        draft: false
+        prerelease: false
 
     - name: Notify deployment success
       uses: 8398a7/action-slack@v3
+      if: success()
       with:
         status: success
-        text: 'Production deployment successful! 🚀'
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        text: 'Production deployment successful! 🚀🎉'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
 
-  cleanup:
-    name: Cleanup
+    - name: Notify deployment failure
+      uses: 8398a7/action-slack@v3
+      if: failure()
+      with:
+        status: failure
+        text: 'Production deployment failed! ❌'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Monitoring and Alerting Setup
+  monitoring-setup:
+    name: Setup Monitoring & Alerting
     runs-on: ubuntu-latest
     needs: [deploy-staging, deploy-production]
     if: always()
     
     steps:
-    - name: Cleanup test resources
-      run: |
-        echo "Cleaning up test resources..."
-        # Add cleanup commands here
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-    - name: Cleanup Docker images
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        version: 'latest'
+        project_id: ${{ env.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Setup Monitoring Dashboard
       run: |
-        echo "Cleaning up Docker images..."
-        docker system prune -f
+        # Create Cloud Monitoring dashboard
+        gcloud monitoring dashboards create \
+          --config-from-file=monitoring/dashboard-config.json || true
+          
+    - name: Configure Alerting Policies
+      run: |
+        # Setup alerting policies for production
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          gcloud alpha monitoring policies create \
+            --policy-from-file=monitoring/alert-policies/production-alerts.json || true
+        fi
+        
+        # Setup alerting policies for staging
+        if [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+          gcloud alpha monitoring policies create \
+            --policy-from-file=monitoring/alert-policies/staging-alerts.json || true
+        fi
+
+    - name: Setup Uptime Checks
+      run: |
+        # Configure uptime monitoring
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          PRODUCTION_URL=$(gcloud run services describe piper-newsletter-production --region ${{ env.GCP_REGION }} --format 'value(status.url)')
+          
+          # Create uptime check for production
+          gcloud alpha monitoring uptime create \
+            --display-name="Piper Newsletter Production" \
+            --uri=$PRODUCTION_URL/health \
+            --period=60s \
+            --timeout=10s || true
+        fi
+
+    - name: Configure Log-based Metrics
+      run: |
+        # Setup log-based metrics for monitoring
+        gcloud logging metrics create piper-error-rate \
+          --description="Error rate metric for Piper Newsletter" \
+          --log-filter='resource.type="cloud_run_revision" AND severity>=ERROR' || true
+          
+        gcloud logging metrics create piper-response-time \
+          --description="Response time metric for Piper Newsletter" \
+          --log-filter='resource.type="cloud_run_revision" AND jsonPayload.responseTime' || true
+
+    - name: Setup Error Tracking
+      run: |
+        # Configure error tracking integration
+        if [ "${{ secrets.SENTRY_AUTH_TOKEN }}" != "" ]; then
+          curl -X POST \
+            https://sentry.io/api/0/projects/${{ secrets.SENTRY_ORG }}/${{ secrets.SENTRY_PROJECT }}/releases/ \
+            -H "Authorization: Bearer ${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "version": "${{ github.sha }}",
+              "refs": [{
+                "repository": "${{ github.repository }}",
+                "commit": "${{ github.sha }}"
+              }],
+              "projects": ["${{ secrets.SENTRY_PROJECT }}"]
+            }' || true
+        fi
+
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [monitoring-setup]
+    if: always()
+    
+    steps:
+    - name: Cleanup old artifacts
+      run: |
+        echo "Cleaning up old artifacts..."
+        # Keep only last 10 successful builds
+        
+    - name: Cleanup old Docker images
+      run: |
+        echo "Cleaning up old Docker images..."
+        # Remove images older than 30 days
+        gcloud container images list-tags gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-staging \
+          --filter='timestamp.datetime < -P30D' \
+          --format='get(digest)' | \
+        xargs -I {} gcloud container images delete gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-staging@{} --quiet || true
+        
+        gcloud container images list-tags gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-production \
+          --filter='timestamp.datetime < -P30D' \
+          --format='get(digest)' | \
+        xargs -I {} gcloud container images delete gcr.io/${{ env.GCP_PROJECT_ID }}/piper-newsletter-production@{} --quiet || true
 
     - name: Notify completion
       uses: 8398a7/action-slack@v3

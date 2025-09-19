@@ -1,0 +1,209 @@
+# Backup Configuration for Piper Newsletter System
+# Comprehensive backup and disaster recovery configuration
+
+backup:
+  # General settings
+  retention_days: 30
+  compression_level: 6
+  encryption_enabled: true
+  encryption_key_path: /etc/backup/encryption.key
+  
+  # Database backups
+  databases:
+    mongodb:
+      enabled: true
+      host: mongodb
+      port: 27017
+      database: piper_newsletter
+      username: ${MONGO_BACKUP_USER}
+      password: ${MONGO_BACKUP_PASS}
+      backup_path: /backups/database/mongodb
+      schedule: "0 2 * * *"  # Daily at 2 AM
+      retention: 7  # days
+      compression: gzip
+      
+    redis:
+      enabled: true
+      host: redis
+      port: 6379
+      backup_path: /backups/database/redis
+      schedule: "0 3 * * *"  # Daily at 3 AM
+      retention: 7  # days
+      
+    postgres:
+      enabled: true
+      host: postgres
+      port: 5432
+      database: piper_analytics
+      username: ${POSTGRES_BACKUP_USER}
+      password: ${POSTGRES_BACKUP_PASS}
+      backup_path: /backups/database/postgres
+      schedule: "0 4 * * *"  # Daily at 4 AM
+      retention: 7  # days
+      compression: gzip
+
+  # Application data backups
+  application_data:
+    uploads:
+      enabled: true
+      source_path: /app/uploads
+      backup_path: /backups/application/uploads
+      schedule: "0 1 * * *"  # Daily at 1 AM
+      retention: 14  # days
+      compression: gzip
+      
+    logs:
+      enabled: true
+      source_path: /app/logs
+      backup_path: /backups/application/logs
+      schedule: "0 5 * * 0"  # Weekly on Sunday at 5 AM
+      retention: 4  # weeks
+      compression: gzip
+      
+    configuration:
+      enabled: true
+      source_path: /app/config
+      backup_path: /backups/application/config
+      schedule: "0 6 * * 0"  # Weekly on Sunday at 6 AM
+      retention: 8  # weeks
+      compression: gzip
+
+  # System backups
+  system_data:
+    nginx_config:
+      enabled: true
+      source_path: /etc/nginx
+      backup_path: /backups/system/nginx
+      schedule: "0 7 * * 0"  # Weekly on Sunday at 7 AM
+      retention: 4  # weeks
+      
+    ssl_certificates:
+      enabled: true
+      source_path: /etc/nginx/ssl
+      backup_path: /backups/system/ssl
+      schedule: "0 8 * * 0"  # Weekly on Sunday at 8 AM
+      retention: 12  # weeks
+      encryption: true
+
+# Cloud storage destinations
+cloud_storage:
+  aws_s3:
+    enabled: true
+    bucket: ${AWS_S3_BACKUP_BUCKET}
+    region: ${AWS_REGION}
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    storage_class: STANDARD_IA
+    encryption: true
+    
+  azure_blob:
+    enabled: false
+    container: ${AZURE_BACKUP_CONTAINER}
+    account_name: ${AZURE_STORAGE_ACCOUNT}
+    account_key: ${AZURE_STORAGE_KEY}
+    
+  google_cloud:
+    enabled: false
+    bucket: ${GCP_BACKUP_BUCKET}
+    project_id: ${GCP_PROJECT_ID}
+    credentials_path: /etc/backup/gcp-credentials.json
+
+# Monitoring and alerting
+monitoring:
+  health_check:
+    enabled: true
+    interval: 300  # 5 minutes
+    timeout: 30
+    
+  alerting:
+    enabled: true
+    email:
+      enabled: true
+      smtp_server: ${SMTP_SERVER}
+      smtp_port: ${SMTP_PORT}
+      username: ${SMTP_USERNAME}
+      password: ${SMTP_PASSWORD}
+      from: ${ALERT_FROM_EMAIL}
+      to: ${ALERT_TO_EMAIL}
+      
+    slack:
+      enabled: true
+      webhook_url: ${SLACK_WEBHOOK_URL}
+      channel: ${SLACK_CHANNEL}
+      
+    webhook:
+      enabled: false
+      url: ${WEBHOOK_URL}
+      headers:
+        Authorization: ${WEBHOOK_AUTH_TOKEN}
+
+# Disaster Recovery
+disaster_recovery:
+  # Backup verification
+  verification:
+    enabled: true
+    schedule: "0 9 * * *"  # Daily at 9 AM
+    test_restore_percentage: 10  # Test 10% of backups
+    
+  # Cross-region replication
+  replication:
+    enabled: true
+    regions:
+      - us-east-1
+      - us-west-2
+      - eu-west-1
+    
+  # Recovery procedures
+  recovery:
+    rto_minutes: 60  # Recovery Time Objective
+    rpo_minutes: 30  # Recovery Point Objective
+    
+    automated_recovery:
+      enabled: true
+      trigger_alerts: true
+      
+    manual_recovery:
+      enabled: true
+      requires_approval: true
+      approval_contacts:
+        - ${DISASTER_RECOVERY_CONTACT}
+
+# Security settings
+security:
+  encryption:
+    enabled: true
+    algorithm: AES-256-GCM
+    key_rotation_days: 90
+    
+  access_control:
+    enabled: true
+    allowed_ips:
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+    
+  audit_logging:
+    enabled: true
+    log_level: INFO
+    retention_days: 365
+
+# Performance settings
+performance:
+  parallel_jobs: 4
+  compression_threads: 2
+  network_timeout: 300
+  retry_attempts: 3
+  retry_delay: 60
+  
+# Maintenance windows
+maintenance:
+  enabled: true
+  windows:
+    - day: sunday
+      start_time: "02:00"
+      end_time: "06:00"
+      timezone: UTC
+    
+  notifications:
+    enabled: true
+    advance_notice_hours: 24
