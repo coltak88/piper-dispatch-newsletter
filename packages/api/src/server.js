@@ -118,6 +118,9 @@ const Subscription = require('./models/Subscription');
 const Appointment = require('./models/Appointment');
 const Content = require('./models/Content');
 const Analytics = require('./models/Analytics');
+const emailTrackingRoutes = require('./routes/emailTracking');
+const emailCampaignRoutes = require('./routes/emailCampaigns');
+const MonitoringService = require('./services/MonitoringService');
 
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -492,6 +495,49 @@ app.put('/api/privacy/settings', authenticateToken, async (req, res) => {
   } catch (error) {
     logger.error('Privacy settings update error:', error);
     res.status(500).json({ error: 'Failed to update privacy settings' });
+  }
+});
+
+// Email tracking routes
+app.use('/api/email-tracking', emailTrackingRoutes);
+
+// Email campaign routes
+app.use('/api/email-campaigns', emailCampaignRoutes);
+
+// Monitoring endpoints
+app.get('/api/monitoring/health', async (req, res) => {
+  try {
+    const healthStatus = MonitoringService.getHealthStatus();
+    res.json(healthStatus);
+  } catch (error) {
+    logger.error('Health check error:', error);
+    res.status(500).json({ error: 'Health check failed' });
+  }
+});
+
+app.get('/api/monitoring/metrics', authenticateToken, async (req, res) => {
+  try {
+    const metrics = MonitoringService.getMetrics();
+    res.json(metrics);
+  } catch (error) {
+    logger.error('Metrics fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch metrics' });
+  }
+});
+
+app.post('/api/monitoring/alerts/:alertId/acknowledge', authenticateToken, async (req, res) => {
+  try {
+    const alertId = parseInt(req.params.alertId);
+    const success = MonitoringService.acknowledgeAlert(alertId);
+    
+    if (success) {
+      res.json({ message: 'Alert acknowledged' });
+    } else {
+      res.status(404).json({ error: 'Alert not found' });
+    }
+  } catch (error) {
+    logger.error('Alert acknowledgment error:', error);
+    res.status(500).json({ error: 'Failed to acknowledge alert' });
   }
 });
 

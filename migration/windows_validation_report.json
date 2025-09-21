@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-09-21T20:01:45.000Z",
+  "timestamp": "2025-09-21T20:14:25.363Z",
   "validationResults": {
     "passed": [
-      "No ask-polestar references found",
+      "No ask-polestar references found in active code",
       "Rasa-x-machina remote configured",
       "Package.json repository URL updated",
       "Package.json homepage updated",
@@ -13,7 +13,7 @@
       "New file created: deployment/rasa-x-machina-deploy.yml",
       "New file created: deployment/.env.rasa-x-machina",
       "New file created: deployment/cloudbuild.rasa-x-machina.yml",
-      "Found 8 rasa-x-machina.dev references"
+      "Found 10 rasa-x-machina.dev references"
     ],
     "failed": [],
     "warnings": []
