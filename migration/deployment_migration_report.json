@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-09-21T19:58:10.128Z",
+  "totalFilesFound": 9,
+  "updatedFiles": [
+    "C:\\Users\\Dell\\piper_newsletter\\deployment\\rasa-x-machina-deploy.yml",
+    "C:\\Users\\Dell\\piper_newsletter\\deployment\\.env.rasa-x-machina",
+    "C:\\Users\\Dell\\piper_newsletter\\deployment\\cloudbuild.rasa-x-machina.yml"
+  ],
+  "errors": [],
+  "summary": {
+    "totalFilesUpdated": 3,
+    "totalErrors": 0,
+    "success": true
+  }
+}

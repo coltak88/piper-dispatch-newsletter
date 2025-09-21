@@ -9,7 +9,6 @@ import './UnifiedDashboard.css';
 import AuthenticationService from '../services/AuthenticationService';
 import MeetingSchedulingService from '../services/MeetingSchedulingService';
 import CommunicationService from '../services/CommunicationService';
-import WunaEmailService from '../services/WunaEmailService';
 import SubscriptionService from '../services/SubscriptionService';
 import EcosystemIntegrationService from '../services/EcosystemIntegrationService';
 
@@ -18,7 +17,7 @@ const UnifiedDashboard = () => {
     const [authService] = useState(() => new AuthenticationService());
     const [meetingService] = useState(() => new MeetingSchedulingService());
     const [communicationService] = useState(() => new CommunicationService());
-    const [emailService] = useState(() => new WunaEmailService());
+    const [emailService] = useState(() => new EmailService());
     const [subscriptionService] = useState(() => new SubscriptionService());
     const [ecosystemService] = useState(() => new EcosystemIntegrationService());
 
@@ -385,7 +384,7 @@ const UnifiedDashboard = () => {
                         onClick={() => handleViewChange('email')}
                     >
                         <span className="icon">📧</span>
-                        <span className="label">Wuna Mail</span>
+                        <span className="label">Email</span>
                         {realTimeData.unreadEmails > 0 && (
                             <span className="badge">{realTimeData.unreadEmails}</span>
                         )}

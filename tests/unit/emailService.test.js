@@ -1,474 +1,343 @@
-const sinon = require('sinon');
-const { expect } = require('chai');
+// Mock nodemailer before importing EmailService
+jest.mock('nodemailer', () => ({
+  createTransporter: jest.fn()
+}));
+
 const nodemailer = require('nodemailer');
 const fs = require('fs').promises;
 const path = require('path');
+const Mustache = require('mustache');
+const EmailService = require('../../services/EmailService');
+
+// Mock fs
+jest.mock('fs', () => ({
+  promises: {
+    readFile: jest.fn()
+  }
+}));
 
 describe('EmailService', () => {
   let emailService;
-  let transporterStub;
-  let sandbox;
+  let mockTransporter;
+  let mockSendMail;
 
   beforeEach(() => {
-    sandbox = sinon.createSandbox();
+    // Reset all mocks before each test
+    jest.clearAllMocks();
     
-    // Create transporter stub
-    transporterStub = {
-      verify: sandbox.stub(),
-      sendMail: sandbox.stub(),
-      close: sandbox.stub()
+    // Clean up any environment variables that might interfere
+    delete process.env.SMTP_HOST;
+    delete process.env.SMTP_PORT;
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    delete process.env.SMTP_FROM;
+    
+    // Setup mock transporter
+    mockSendMail = jest.fn().mockResolvedValue({
+      messageId: 'test-message-id',
+      accepted: ['test@example.com'],
+      rejected: []
+    });
+    
+    mockTransporter = {
+      sendMail: mockSendMail,
+      verify: jest.fn().mockResolvedValue(true)
     };
     
-    // Stub nodemailer.createTransport
-    sandbox.stub(nodemailer, 'createTransport').returns(transporterStub);
+    nodemailer.createTransporter.mockReturnValue(mockTransporter);
     
-    // Stub fs.readFile for template loading
-    sandbox.stub(fs, 'readFile').resolves('<html>Test Template</html>');
-    
-    // Initialize service
-    const EmailService = require('../../services/EmailService');
-    emailService = new EmailService();
+    // Create a fresh instance of EmailService for each test
+    emailService = new EmailService({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'newsletter@example.com',
+        pass: 'password'
+      },
+      from: 'newsletter@example.com'
+    });
   });
 
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  describe('Constructor', () => {
-    it('should initialize with provided options', () => {
-      const customOptions = {
-        host: 'custom.smtp.com',
+  describe('constructor', () => {
+    it('should initialize with provided config', () => {
+      expect(emailService.config).toMatchObject({
+        host: 'smtp.gmail.com',
         port: 587,
-        secure: false
-      };
-      
-      const customService = new (require('../../services/EmailService'))(customOptions);
-      
-      expect(nodemailer.createTransport.calledOnce).to.be.true;
-      expect(nodemailer.createTransport.firstCall.args[0]).to.include(customOptions);
+        secure: false,
+        auth: {
+          user: 'newsletter@example.com',
+          pass: 'password'
+        },
+        from: 'newsletter@example.com'
+      });
+      expect(emailService.transporter).toBeDefined();
     });
 
-    it('should initialize with environment variables', () => {
-      process.env.SMTP_HOST = 'env.smtp.com';
-      process.env.SMTP_PORT = '465';
-      process.env.SMTP_SECURE = 'true';
+    it('should use custom config when provided', () => {
+      const customConfig = {
+        host: 'smtp.custom.com',
+        port: 465,
+        secure: true,
+        auth: { user: 'custom@example.com', pass: 'custompass' },
+        from: 'custom@example.com'
+      };
+      const service = new EmailService(customConfig);
+      expect(service.config).toMatchObject(customConfig);
+    });
+
+    it('should use environment variables when available', () => {
+      process.env.SMTP_HOST = 'smtp.env.com';
+      process.env.SMTP_PORT = '2525';
+      process.env.SMTP_USER = 'env@example.com';
+      process.env.SMTP_PASS = 'envpass';
+      process.env.SMTP_FROM = 'env@example.com';
       
-      const envService = new (require('../../services/EmailService'))();
-      
-      expect(nodemailer.createTransport.calledOnce).to.be.true;
-      const options = nodemailer.createTransport.firstCall.args[0];
-      expect(options.host).to.equal('env.smtp.com');
-      expect(options.port).to.equal(465);
-      expect(options.secure).to.be.true;
+      const service = new EmailService();
+      expect(service.config.host).toBe('smtp.env.com');
+      expect(service.config.port).toBe('2525'); // Environment variables come as strings
+      expect(service.config.auth.user).toBe('env@example.com');
+      expect(service.config.auth.pass).toBe('envpass');
+      expect(service.config.from).toBe('env@example.com');
     });
   });
 
   describe('verifyConnection', () => {
-    it('should verify successful connection', async () => {
-      transporterStub.verify.resolves(true);
-      
+    it('should verify connection successfully', async () => {
       const result = await emailService.verifyConnection();
-      
-      expect(result).to.be.true;
-      expect(transporterStub.verify.calledOnce).to.be.true;
+      expect(result).toBe(true);
+      expect(mockTransporter.verify).toHaveBeenCalled();
     });
 
-    it('should handle connection verification failure', async () => {
-      transporterStub.verify.rejects(new Error('Connection failed'));
-      
-      const result = await emailService.verifyConnection();
-      
-      expect(result).to.be.false;
-      expect(transporterStub.verify.calledOnce).to.be.true;
-    });
-  });
-
-  describe('loadTemplate', () => {
-    it('should load existing template', async () => {
-      const templateName = 'welcome';
-      const templateContent = '<html>Welcome Template</html>';
-      
-      fs.readFile.resolves(templateContent);
-      
-      const result = await emailService.loadTemplate(templateName);
-      
-      expect(result).to.equal(templateContent);
-      expect(fs.readFile.calledOnce).to.be.true;
-      expect(fs.readFile.firstCall.args[0]).to.include(`templates/emails/${templateName}.html`);
+    it('should handle connection failure', async () => {
+      mockTransporter.verify.mockRejectedValue(new Error('Connection failed'));
+      await expect(emailService.verifyConnection())
+        .rejects.toThrow('Connection failed');
     });
 
-    it('should return null for non-existent template', async () => {
-      fs.readFile.rejects(new Error('File not found'));
+    it('should throw error if transporter not initialized', async () => {
+      emailService.transporter = null;
       
-      const result = await emailService.loadTemplate('nonexistent');
-      
-      expect(result).to.be.null;
-    });
-  });
-
-  describe('renderTemplate', () => {
-    it('should render template with placeholders', () => {
-      const template = 'Hello {{userName}}, welcome to {{appName}}!';
-      const variables = {
-        userName: 'John Doe',
-        appName: 'Test App'
-      };
-      
-      const result = emailService.renderTemplate(template, variables);
-      
-      expect(result).to.equal('Hello John Doe, welcome to Test App!');
-    });
-
-    it('should handle missing variables gracefully', () => {
-      const template = 'Hello {{userName}}, your balance is {{balance}}';
-      const variables = {
-        userName: 'John Doe'
-        // balance is missing
-      };
-      
-      const result = emailService.renderTemplate(template, variables);
-      
-      expect(result).to.equal('Hello John Doe, your balance is {{balance}}');
-    });
-
-    it('should handle empty template', () => {
-      const template = '';
-      const variables = { userName: 'John Doe' };
-      
-      const result = emailService.renderTemplate(template, variables);
-      
-      expect(result).to.equal('');
+      await expect(emailService.verifyConnection())
+        .rejects.toThrow('Transporter not initialized');
     });
   });
 
   describe('sendEmail', () => {
     it('should send email successfully', async () => {
-      const emailOptions = {
-        to: 'test@example.com',
-        subject: 'Test Email',
-        html: '<html>Test Content</html>'
+      const emailData = {
+        to: 'recipient@example.com',
+        subject: 'Test Subject',
+        html: '<h1>Test HTML</h1>',
+        text: 'Test text'
       };
-      
-      transporterStub.sendMail.resolves({ messageId: 'test-message-id' });
-      
-      const result = await emailService.sendEmail(emailOptions);
-      
-      expect(result.success).to.be.true;
-      expect(result.messageId).to.equal('test-message-id');
-      expect(transporterStub.sendMail.calledOnce).to.be.true;
-      expect(transporterStub.sendMail.firstCall.args[0]).to.include(emailOptions);
-    });
 
-    it('should include default from address if not provided', async () => {
-      const emailOptions = {
-        to: 'test@example.com',
-        subject: 'Test Email'
-      };
-      
-      transporterStub.sendMail.resolves({ messageId: 'test-message-id' });
-      
-      await emailService.sendEmail(emailOptions);
-      
-      const sentOptions = transporterStub.sendMail.firstCall.args[0];
-      expect(sentOptions.from).to.exist;
-      expect(sentOptions.from).to.include(process.env.SMTP_USER || 'noreply@pipernewsletter.com');
+      const result = await emailService.sendEmail(emailData);
+
+      expect(mockSendMail).toHaveBeenCalledWith({
+        from: 'newsletter@example.com',
+        to: 'recipient@example.com',
+        subject: 'Test Subject',
+        html: '<h1>Test HTML</h1>',
+        text: 'Test text',
+        attachments: [],
+        headers: {
+          'X-Campaign-ID': '',
+          'X-Subscriber-ID': ''
+        }
+      });
+      expect(result).toEqual({
+        messageId: 'test-message-id',
+        accepted: ['test@example.com'],
+        rejected: []
+      });
     });
 
     it('should handle email sending failure', async () => {
-      const emailOptions = {
-        to: 'test@example.com',
-        subject: 'Test Email'
+      mockSendMail.mockRejectedValue(new Error('Send failed'));
+      
+      const emailData = {
+        to: 'recipient@example.com',
+        subject: 'Test Subject',
+        html: '<h1>Test HTML</h1>'
       };
-      
-      transporterStub.sendMail.rejects(new Error('SMTP Error'));
-      
-      const result = await emailService.sendEmail(emailOptions);
-      
-      expect(result.success).to.be.false;
-      expect(result.error).to.equal('SMTP Error');
-    });
-  });
 
-  describe('sendWelcomeEmail', () => {
-    it('should send welcome email with template', async () => {
-      const userData = {
-        email: 'newuser@example.com',
-        userName: 'John Doe',
-        appName: 'Piper Newsletter'
-      };
-      
-      const templateContent = '<html>Welcome {{userName}} to {{appName}}!</html>';
-      fs.readFile.resolves(templateContent);
-      transporterStub.sendMail.resolves({ messageId: 'welcome-message-id' });
-      
-      const result = await emailService.sendWelcomeEmail(userData);
-      
-      expect(result.success).to.be.true;
-      expect(result.messageId).to.equal('welcome-message-id');
-      
-      const sentOptions = transporterStub.sendMail.firstCall.args[0];
-      expect(sentOptions.to).to.equal(userData.email);
-      expect(sentOptions.subject).to.include('Welcome');
-      expect(sentOptions.html).to.include('Welcome John Doe to Piper Newsletter!');
-    });
-
-    it('should handle template loading failure', async () => {
-      const userData = {
-        email: 'newuser@example.com',
-        userName: 'John Doe'
-      };
-      
-      fs.readFile.rejects(new Error('Template not found'));
-      
-      const result = await emailService.sendWelcomeEmail(userData);
-      
-      expect(result.success).to.be.false;
-      expect(result.error).to.include('Failed to load template');
-    });
-  });
-
-  describe('sendPasswordResetEmail', () => {
-    it('should send password reset email', async () => {
-      const userData = {
-        email: 'user@example.com',
-        userName: 'John Doe',
-        resetUrl: 'https://app.com/reset?token=abc123',
-        expiryHours: 24
-      };
-      
-      const templateContent = '<html>Reset your password: {{resetUrl}} (expires in {{expiryHours}} hours)</html>';
-      fs.readFile.resolves(templateContent);
-      transporterStub.sendMail.resolves({ messageId: 'reset-message-id' });
-      
-      const result = await emailService.sendPasswordResetEmail(userData);
-      
-      expect(result.success).to.be.true;
-      
-      const sentOptions = transporterStub.sendMail.firstCall.args[0];
-      expect(sentOptions.to).to.equal(userData.email);
-      expect(sentOptions.subject).to.include('Password Reset');
-      expect(sentOptions.html).to.include(userData.resetUrl);
-      expect(sentOptions.html).to.include('24 hours');
-    });
-  });
-
-  describe('sendSubscriptionConfirmationEmail', () => {
-    it('should send subscription confirmation email', async () => {
-      const subscriptionData = {
-        email: 'subscriber@example.com',
-        userName: 'John Doe',
-        planName: 'Premium',
-        amount: 29.99,
-        currency: 'USD',
-        billingCycle: 'monthly',
-        nextBillingDate: '2024-02-01',
-        features: ['Feature 1', 'Feature 2']
-      };
-      
-      const templateContent = '<html>Subscribed to {{planName}} plan for {{amount}} {{currency}}</html>';
-      fs.readFile.resolves(templateContent);
-      transporterStub.sendMail.resolves({ messageId: 'subscription-message-id' });
-      
-      const result = await emailService.sendSubscriptionConfirmationEmail(subscriptionData);
-      
-      expect(result.success).to.be.true;
-      
-      const sentOptions = transporterStub.sendMail.firstCall.args[0];
-      expect(sentOptions.html).to.include('Premium plan');
-      expect(sentOptions.html).to.include('29.99 USD');
+      await expect(emailService.sendEmail(emailData)).rejects.toThrow('Send failed');
     });
   });
 
   describe('sendBulkEmails', () => {
-    it('should send bulk emails successfully', async () => {
-      const recipients = [
-        { email: 'user1@example.com', userName: 'User 1' },
-        { email: 'user2@example.com', userName: 'User 2' },
-        { email: 'user3@example.com', userName: 'User 3' }
-      ];
-      
-      const templateData = {
-        subject: 'Bulk Newsletter',
-        templateName: 'newsletter',
-        variables: { appName: 'Piper Newsletter' }
-      };
-      
-      const templateContent = '<html>Hello {{userName}}, from {{appName}}</html>';
-      fs.readFile.resolves(templateContent);
-      
-      transporterStub.sendMail
-        .onFirstCall().resolves({ messageId: 'msg1' })
-        .onSecondCall().resolves({ messageId: 'msg2' })
-        .onThirdCall().resolves({ messageId: 'msg3' });
-      
-      const results = await emailService.sendBulkEmails(recipients, templateData);
-      
-      expect(results).to.have.lengthOf(3);
-      expect(results.every(r => r.success)).to.be.true;
-      expect(transporterStub.sendMail.callCount).to.equal(3);
-    });
-
-    it('should handle partial failures in bulk sending', async () => {
-      const recipients = [
-        { email: 'user1@example.com', userName: 'User 1' },
-        { email: 'user2@example.com', userName: 'User 2' }
-      ];
-      
-      const templateData = {
-        subject: 'Bulk Newsletter',
-        templateName: 'newsletter'
-      };
-      
-      const templateContent = '<html>Hello {{userName}}</html>';
-      fs.readFile.resolves(templateContent);
-      
-      transporterStub.sendMail
-        .onFirstCall().resolves({ messageId: 'msg1' })
-        .onSecondCall().rejects(new Error('SMTP Error'));
-      
-      const results = await emailService.sendBulkEmails(recipients, templateData);
-      
-      expect(results).to.have.lengthOf(2);
-      expect(results[0].success).to.be.true;
-      expect(results[1].success).to.be.false;
-      expect(results[1].error).to.equal('SMTP Error');
-    });
-
-    it('should respect batch size limit', async () => {
-      const recipients = Array(15).fill(null).map((_, i) => ({
-        email: `user${i}@example.com`,
-        userName: `User ${i}`
-      }));
-      
-      const templateData = {
-        subject: 'Bulk Newsletter',
-        templateName: 'newsletter',
-        batchSize: 5
-      };
-      
-      const templateContent = '<html>Hello {{userName}}</html>';
-      fs.readFile.resolves(templateContent);
-      
-      transporterStub.sendMail.resolves({ messageId: 'msg-id' });
-      
-      const results = await emailService.sendBulkEmails(recipients, templateData);
-      
-      expect(results).to.have.lengthOf(15);
-      expect(transporterStub.sendMail.callCount).to.equal(15);
-    });
-  });
-
-  describe('verifyEmailAddress', () => {
-    it('should return verification result', async () => {
-      const email = 'test@example.com';
-      
-      // Mock DNS lookup and SMTP verification
-      const dnsStub = sandbox.stub(require('dns'), 'resolveMx');
-      dnsStub.resolves([{ exchange: 'mail.example.com', priority: 10 }]);
-      
-      const result = await emailService.verifyEmailAddress(email);
-      
-      expect(result.isValid).to.be.true;
-      expect(result.domain).to.equal('example.com');
-      expect(result.hasMXRecord).to.be.true;
-    });
-
-    it('should handle invalid email format', async () => {
-      const email = 'invalid-email';
-      
-      const result = await emailService.verifyEmailAddress(email);
-      
-      expect(result.isValid).to.be.false;
-      expect(result.error).to.include('Invalid email format');
-    });
-
-    it('should handle domain without MX records', async () => {
-      const email = 'test@nodomain.com';
-      
-      const dnsStub = sandbox.stub(require('dns'), 'resolveMx');
-      dnsStub.rejects(new Error('No MX records found'));
-      
-      const result = await emailService.verifyEmailAddress(email);
-      
-      expect(result.isValid).to.be.false;
-      expect(result.hasMXRecord).to.be.false;
-    });
-  });
-
-  describe('checkEmailReputation', () => {
-    it('should return reputation score', async () => {
-      const email = 'test@example.com';
-      
-      // Mock reputation service API call
-      const axiosStub = sandbox.stub(require('axios'), 'get');
-      axiosStub.resolves({
-        data: {
-          reputation: 95,
-          blacklisted: false,
-          disposable: false
+    it('should send multiple emails successfully', async () => {
+      const emailList = [
+        {
+          email: 'recipient1@example.com',
+          subscriberId: 'sub1'
+        },
+        {
+          email: 'recipient2@example.com',
+          subscriberId: 'sub2'
         }
+      ];
+
+      const campaignData = {
+        subject: 'Test Subject',
+        html: '<h1>Test HTML</h1>',
+        text: 'Test text'
+      };
+
+      const results = await emailService.sendBulkEmails(emailList, campaignData);
+
+      expect(mockSendMail).toHaveBeenCalledTimes(2);
+      expect(results.successful).toHaveLength(2);
+      expect(results.failed).toHaveLength(0);
+      expect(results.total).toBe(2);
+    });
+
+    it('should handle partial failures in bulk emails', async () => {
+      mockSendMail
+        .mockResolvedValueOnce({
+          messageId: 'test-message-id-1',
+          accepted: ['recipient1@example.com'],
+          rejected: []
+        })
+        .mockRejectedValueOnce(new Error('Send failed'));
+
+      const emailList = [
+        {
+          email: 'recipient1@example.com',
+          subscriberId: 'sub1'
+        },
+        {
+          email: 'recipient2@example.com',
+          subscriberId: 'sub2'
+        }
+      ];
+
+      const campaignData = {
+        subject: 'Test Subject',
+        html: '<h1>Test HTML</h1>',
+        text: 'Test text'
+      };
+
+      const results = await emailService.sendBulkEmails(emailList, campaignData);
+
+      expect(mockSendMail).toHaveBeenCalledTimes(2);
+      expect(results.successful).toHaveLength(1);
+      expect(results.failed).toHaveLength(1);
+      expect(results.total).toBe(2);
+    });
+  });
+
+  describe('renderTemplate', () => {
+    it('should render template with data', async () => {
+      const template = emailService.renderTemplate('<h1>Hello {{name}}!</h1>', { name: 'John' });
+      expect(template).toBe('<h1>Hello John!</h1>');
+    });
+
+    it('should handle missing template content', async () => {
+      expect(() => emailService.renderTemplate(null, { name: 'John' }))
+        .toThrow('Template content is required');
+    });
+  });
+
+  describe('sendWelcomeEmail', () => {
+    beforeEach(() => {
+      // Mock the loadTemplate method to return a template
+      emailService.loadTemplate = jest.fn().mockResolvedValue('<h1>Hello {{name}}!</h1>');
+    });
+
+    it('should send welcome email successfully', async () => {
+      const result = await emailService.sendWelcomeEmail('recipient@example.com', {
+        firstName: 'John',
+        id: 'subscriber-123'
+      });
+
+      expect(emailService.loadTemplate).toHaveBeenCalledWith('welcome');
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'recipient@example.com',
+          subject: 'Welcome to Piper Newsletter!',
+          headers: expect.objectContaining({
+            'X-Subscriber-ID': 'subscriber-123'
+          })
+        })
+      );
+      expect(result).toMatchObject({ messageId: 'test-message-id' });
+    });
+
+    it('should handle template loading error', async () => {
+      emailService.loadTemplate = jest.fn().mockRejectedValue(new Error('Template not found'));
+
+      await expect(emailService.sendWelcomeEmail('recipient@example.com', {
+        firstName: 'John'
+      })).rejects.toThrow('Template not found');
+    });
+  });
+
+  describe('processQueue', () => {
+    it('should process queued emails', async () => {
+      const emailOptions = {
+        to: 'test@example.com',
+        subject: 'Queued Email',
+        html: '<h1>Queued Email</h1>'
+      };
+
+      emailService.addToQueue(emailOptions);
+      await emailService.processQueue();
+
+      expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
+        to: 'test@example.com',
+        subject: 'Queued Email'
+      }));
+    });
+
+    it('should handle empty queue', async () => {
+      await expect(emailService.processQueue()).resolves.not.toThrow();
+    });
+  });
+
+  describe('addToQueue', () => {
+    it('should add email to queue', () => {
+      // Mock the processQueue method to prevent automatic processing
+      emailService.processQueue = jest.fn();
+      
+      const emailOptions = {
+        to: 'test@example.com',
+        subject: 'Test Subject',
+        html: '<h1>Test HTML</h1>'
+      };
+
+      emailService.addToQueue(emailOptions);
+      expect(emailService.getQueueStatus().queueSize).toBe(1);
+    });
+  });
+
+  describe('getQueueStatus', () => {
+    it('should return correct queue status', () => {
+      // Mock the processQueue method to prevent automatic processing
+      emailService.processQueue = jest.fn();
+      
+      const status = emailService.getQueueStatus();
+      expect(status.queueSize).toBe(0);
+      expect(status.isProcessing).toBe(false);
+      
+      emailService.addToQueue({
+        to: 'test1@example.com',
+        subject: 'Test 1',
+        html: '<h1>Test 1</h1>'
       });
       
-      const result = await emailService.checkEmailReputation(email);
+      const status2 = emailService.getQueueStatus();
+      expect(status2.queueSize).toBe(1);
       
-      expect(result.reputation).to.equal(95);
-      expect(result.isBlacklisted).to.be.false;
-      expect(result.isDisposable).to.be.false;
-    });
-
-    it('should handle reputation service errors', async () => {
-      const email = 'test@example.com';
+      emailService.addToQueue({
+        to: 'test2@example.com',
+        subject: 'Test 2',
+        html: '<h1>Test 2</h1>'
+      });
       
-      const axiosStub = sandbox.stub(require('axios'), 'get');
-      axiosStub.rejects(new Error('Service unavailable'));
-      
-      const result = await emailService.checkEmailReputation(email);
-      
-      expect(result.reputation).to.equal(50); // Default score
-      expect(result.error).to.equal('Service unavailable');
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('should handle transporter initialization failure', () => {
-      nodemailer.createTransport.throws(new Error('Invalid configuration'));
-      
-      expect(() => {
-        new (require('../../services/EmailService'))();
-      }).to.throw('Failed to initialize email transporter');
-    });
-
-    it('should handle template loading errors gracefully', async () => {
-      const userData = {
-        email: 'user@example.com',
-        userName: 'John Doe'
-      };
-      
-      fs.readFile.rejects(new Error('Template not found'));
-      
-      const result = await emailService.sendWelcomeEmail(userData);
-      
-      expect(result.success).to.be.false;
-      expect(result.error).to.include('Failed to load template');
-    });
-  });
-
-  describe('Cleanup', () => {
-    it('should close transporter connection', async () => {
-      transporterStub.close.resolves();
-      
-      await emailService.close();
-      
-      expect(transporterStub.close.calledOnce).to.be.true;
-    });
-
-    it('should handle cleanup errors', async () => {
-      transporterStub.close.rejects(new Error('Close failed'));
-      
-      await emailService.close();
-      
-      expect(transporterStub.close.calledOnce).to.be.true;
-      // Should not throw error
+      const status3 = emailService.getQueueStatus();
+      expect(status3.queueSize).toBe(2);
     });
   });
 });

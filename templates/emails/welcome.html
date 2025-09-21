@@ -5,137 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Piper Newsletter</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .container {
-            background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 10px;
-        }
-        .welcome-title {
-            font-size: 24px;
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-        .content {
-            margin-bottom: 30px;
-        }
-        .cta-button {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            padding: 12px 30px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-        .features {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-        .feature-item {
-            margin-bottom: 10px;
-            padding-left: 20px;
-            position: relative;
-        }
-        .feature-item::before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #28a745;
-            font-weight: bold;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            color: #666;
-            font-size: 14px;
-        }
-        .social-links {
-            margin: 20px 0;
-        }
-        .social-links a {
-            display: inline-block;
-            margin: 0 10px;
-            color: #007bff;
-            text-decoration: none;
-        }
-        @media only screen and (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            .welcome-title {
-                font-size: 20px;
-            }
-        }
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f8f9fa; }
+        .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .button { display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🎯 {{appName}}</div>
-            <h1 class="welcome-title">Welcome to Our Community, {{userName}}!</h1>
+            <h1>Welcome to Piper Newsletter!</h1>
         </div>
-
         <div class="content">
-            <p>Hello {{userName}},</p>
-            
-            <p>We're thrilled to have you join the Piper Newsletter community! Your journey to creating engaging, personalized newsletters begins now.</p>
-
-            <div class="features">
-                <h3>What You Can Do Now:</h3>
-                <div class="feature-item">Create stunning newsletters with our intuitive editor</div>
-                <div class="feature-item">Schedule campaigns for optimal engagement</div>
-                <div class="feature-item">Track performance with detailed analytics</div>
-                <div class="feature-item">Manage your subscriber lists efficiently</div>
-                <div class="feature-item">Integrate with your favorite tools and platforms</div>
-            </div>
-
-            <p>Ready to get started? Click the button below to access your dashboard and create your first newsletter!</p>
-
-            <div style="text-align: center;">
-                <a href="{{loginUrl}}" class="cta-button">Access Your Dashboard</a>
-            </div>
-
-            <p>If you have any questions or need assistance, don't hesitate to reach out to our support team at <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>.</p>
-
-            <p>Thank you for choosing Piper Newsletter. We can't wait to see what you create!</p>
-
-            <p>Best regards,<br>
-            The Piper Newsletter Team</p>
+            <p>Dear {{firstName}},</p>
+            <p>Thank you for subscribing to Piper Newsletter! We're excited to have you as part of our community.</p>
+            <p>You'll start receiving our latest updates, news, and exclusive content directly in your inbox.</p>
+            <p>Your subscription was confirmed on {{subscriptionDate}}.</p>
+            <p>If you have any questions, feel free to reach out to our support team.</p>
+            <p>Best regards,<br>The Piper Newsletter Team</p>
         </div>
-
         <div class="footer">
-            <div class="social-links">
-                <a href="#">Twitter</a>
-                <a href="#">LinkedIn</a>
-                <a href="#">Facebook</a>
-                <a href="#">Instagram</a>
-            </div>
-            <p>This email was sent to {{userName}} because you recently created an account with Piper Newsletter.</p>
+            <p>If you wish to unsubscribe, <a href="{{unsubscribeUrl}}">click here</a>.</p>
             <p>&copy; 2024 Piper Newsletter. All rights reserved.</p>
         </div>
     </div>

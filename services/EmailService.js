@@ -1,433 +1,492 @@
 const nodemailer = require('nodemailer');
-const winston = require('winston');
-const path = require('path');
 const fs = require('fs').promises;
+const path = require('path');
+const mustache = require('mustache');
 
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'email-service' },
-  transports: [
-    new winston.transports.File({ filename: 'logs/email-error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/email-combined.log' })
-  ]
-});
-
+/**
+ * Email service for sending newsletters and managing email campaigns
+ */
 class EmailService {
-  constructor() {
-    this.transporter = null;
-    this.initializeTransporter();
-  }
+    constructor(options = {}) {
+        this.config = {
+            host: options.host || process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: options.port || process.env.SMTP_PORT || 587,
+            secure: options.secure || process.env.SMTP_SECURE === 'true' || false,
+            auth: {
+                user: options.user || process.env.SMTP_USER,
+                pass: options.pass || process.env.SMTP_PASS
+            },
+            from: options.from || process.env.SMTP_FROM || 'noreply@pipernewsletter.com',
+            templatesDir: options.templatesDir || path.join(__dirname, '../templates/emails'),
+            batchSize: options.batchSize || 100,
+            retryAttempts: options.retryAttempts || 3,
+            retryDelay: options.retryDelay || 5000,
+            rateLimit: options.rateLimit || 100, // emails per minute
+            ...options
+        };
 
-  async initializeTransporter() {
-    try {
-      // Configure based on environment
-      if (process.env.NODE_ENV === 'production') {
-        this.transporter = nodemailer.createTransporter({
-          host: process.env.SMTP_HOST,
-          port: process.env.SMTP_PORT,
-          secure: true,
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-          },
-          pool: true,
-          maxConnections: 5,
-          maxMessages: 100,
-          rateDelta: 20000,
-          rateLimit: 5
-        });
-      } else {
-        // Use Ethereal for development
-        const testAccount = await nodemailer.createTestAccount();
-        this.transporter = nodemailer.createTransporter({
-          host: 'smtp.ethereal.email',
-          port: 587,
-          secure: false,
-          auth: {
-            user: testAccount.user,
-            pass: testAccount.pass
-          }
-        });
-      }
-
-      // Verify connection
-      await this.transporter.verify();
-      logger.info('Email transporter initialized successfully');
-    } catch (error) {
-      logger.error('Failed to initialize email transporter:', error);
-      throw error;
-    }
-  }
-
-  async loadTemplate(templateName, data = {}) {
-    try {
-      const templatePath = path.join(__dirname, '../templates/emails', `${templateName}.html`);
-      let template = await fs.readFile(templatePath, 'utf8');
-
-      // Replace template variables
-      Object.keys(data).forEach(key => {
-        const regex = new RegExp(`{{${key}}}`, 'g');
-        template = template.replace(regex, data[key]);
-      });
-
-      return template;
-    } catch (error) {
-      logger.error(`Failed to load email template: ${templateName}`, error);
-      throw new Error(`Email template not found: ${templateName}`);
-    }
-  }
-
-  async sendEmail(options) {
-    try {
-      const mailOptions = {
-        from: process.env.EMAIL_FROM || 'noreply@pipernewsletter.com',
-        to: options.to,
-        subject: options.subject,
-        html: options.html,
-        text: options.text,
-        attachments: options.attachments || []
-      };
-
-      if (options.cc) mailOptions.cc = options.cc;
-      if (options.bcc) mailOptions.bcc = options.bcc;
-      if (options.replyTo) mailOptions.replyTo = options.replyTo;
-
-      const result = await this.transporter.sendMail(mailOptions);
-      
-      logger.info(`Email sent successfully to ${options.to}`);
-      return {
-        messageId: result.messageId,
-        previewURL: nodemailer.getTestMessageUrl(result)
-      };
-    } catch (error) {
-      logger.error(`Failed to send email to ${options.to}:`, error);
-      throw new Error('Failed to send email');
-    }
-  }
-
-  async sendWelcomeEmail(userData) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        appName: 'Piper Newsletter',
-        loginUrl: `${process.env.FRONTEND_URL}/login`,
-        supportEmail: process.env.SUPPORT_EMAIL || 'support@pipernewsletter.com'
-      };
-
-      const html = await this.loadTemplate('welcome', templateData);
-      const text = `Welcome to Piper Newsletter, ${userData.name}! We're excited to have you on board.`;
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: 'Welcome to Piper Newsletter!',
-        html,
-        text
-      });
-    } catch (error) {
-      logger.error(`Failed to send welcome email to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendPasswordResetEmail(userData, resetToken) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        resetUrl: `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`,
-        expiryHours: process.env.PASSWORD_RESET_EXPIRY || '24',
-        supportEmail: process.env.SUPPORT_EMAIL || 'support@pipernewsletter.com'
-      };
-
-      const html = await this.loadTemplate('password-reset', templateData);
-      const text = `Click here to reset your password: ${templateData.resetUrl}. This link expires in ${templateData.expiryHours} hours.`;
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: 'Reset Your Piper Newsletter Password',
-        html,
-        text
-      });
-    } catch (error) {
-      logger.error(`Failed to send password reset email to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendSubscriptionConfirmation(userData, subscriptionData) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        planName: subscriptionData.planName,
-        amount: subscriptionData.amount,
-        currency: subscriptionData.currency,
-        billingCycle: subscriptionData.billingCycle,
-        nextBillingDate: subscriptionData.nextBillingDate,
-        features: subscriptionData.features || []
-      };
-
-      const html = await this.loadTemplate('subscription-confirmation', templateData);
-      const text = `Thank you for subscribing to ${subscriptionData.planName}! Your subscription is now active.`;
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: 'Subscription Confirmation - Piper Newsletter',
-        html,
-        text
-      });
-    } catch (error) {
-      logger.error(`Failed to send subscription confirmation to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendPaymentFailedEmail(userData, paymentData) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        amount: paymentData.amount,
-        currency: paymentData.currency,
-        retryUrl: `${process.env.FRONTEND_URL}/billing`,
-        supportEmail: process.env.SUPPORT_EMAIL || 'support@pipernewsletter.com'
-      };
-
-      const html = await this.loadTemplate('payment-failed', templateData);
-      const text = `Your payment of ${paymentData.amount} ${paymentData.currency} failed. Please update your payment method.`;
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: 'Payment Failed - Piper Newsletter',
-        html,
-        text
-      });
-    } catch (error) {
-      logger.error(`Failed to send payment failed email to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendAppointmentReminder(userData, appointmentData) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        appointmentTitle: appointmentData.title,
-        appointmentDate: appointmentData.date,
-        appointmentTime: appointmentData.time,
-        appointmentLocation: appointmentData.location,
-        meetingLink: appointmentData.meetingLink,
-        timezone: appointmentData.timezone,
-        cancelUrl: `${process.env.FRONTEND_URL}/appointments/${appointmentData.id}/cancel`
-      };
-
-      const html = await this.loadTemplate('appointment-reminder', templateData);
-      const text = `Reminder: You have an appointment "${appointmentData.title}" scheduled for ${appointmentData.date} at ${appointmentData.time}.`;
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: `Appointment Reminder: ${appointmentData.title}`,
-        html,
-        text
-      });
-    } catch (error) {
-      logger.error(`Failed to send appointment reminder to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendNewsletterDigest(userData, newsletterData) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        newsletterTitle: newsletterData.title,
-        articles: newsletterData.articles || [],
-        readMoreUrl: `${process.env.FRONTEND_URL}/newsletter/${newsletterData.id}`,
-        unsubscribeUrl: `${process.env.FRONTEND_URL}/unsubscribe?token=${userData.unsubscribeToken}`
-      };
-
-      const html = await this.loadTemplate('newsletter-digest', templateData);
-      const text = `Your weekly newsletter digest is ready: ${newsletterData.title}`;
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: `📧 ${newsletterData.title} - Your Weekly Digest`,
-        html,
-        text
-      });
-    } catch (error) {
-      logger.error(`Failed to send newsletter digest to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendTwoFactorCode(userData, code) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        code: code,
-        expiryMinutes: process.env.TWO_FACTOR_EXPIRY || '10',
-        supportEmail: process.env.SUPPORT_EMAIL || 'support@pipernewsletter.com'
-      };
-
-      const html = await this.loadTemplate('two-factor-code', templateData);
-      const text = `Your two-factor authentication code is: ${code}. This code expires in ${templateData.expiryMinutes} minutes.`;
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: 'Your Two-Factor Authentication Code',
-        html,
-        text
-      });
-    } catch (error) {
-      logger.error(`Failed to send 2FA code to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendSecurityAlert(userData, alertData) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        alertType: alertData.type,
-        alertDescription: alertData.description,
-        timestamp: alertData.timestamp,
-        ipAddress: alertData.ipAddress,
-        userAgent: alertData.userAgent,
-        actionUrl: alertData.actionUrl || `${process.env.FRONTEND_URL}/security`,
-        supportEmail: process.env.SUPPORT_EMAIL || 'support@pipernewsletter.com'
-      };
-
-      const html = await this.loadTemplate('security-alert', templateData);
-      const text = `Security Alert: ${alertData.type} - ${alertData.description}`;
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: `🚨 Security Alert - ${alertData.type}`,
-        html,
-        text
-      });
-    } catch (error) {
-      logger.error(`Failed to send security alert to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendAccountSuspendedEmail(userData, suspensionData) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        suspensionReason: suspensionData.reason,
-        suspensionDate: suspensionData.date,
-        appealUrl: `${process.env.FRONTEND_URL}/appeal`,
-        supportEmail: process.env.SUPPORT_EMAIL || 'support@pipernewsletter.com'
-      };
-
-      const html = await this.loadTemplate('account-suspended', templateData);
-      const text = `Your account has been suspended due to: ${suspensionData.reason}. You can appeal this decision.`;
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: 'Account Suspended - Piper Newsletter',
-        html,
-        text
-      });
-    } catch (error) {
-      logger.error(`Failed to send account suspension email to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendGDPRDataExport(userData, exportData) {
-    try {
-      const templateData = {
-        userName: userData.name,
-        exportDate: new Date().toISOString(),
-        dataTypes: exportData.dataTypes || []
-      };
-
-      const html = await this.loadTemplate('gdpr-data-export', templateData);
-      const text = `Your GDPR data export is ready. Please find the download link in the email.`;
-
-      const attachments = [{
-        filename: `data-export-${userData.id}.json`,
-        content: JSON.stringify(exportData.data, null, 2),
-        contentType: 'application/json'
-      }];
-
-      return await this.sendEmail({
-        to: userData.email,
-        subject: 'Your GDPR Data Export - Piper Newsletter',
-        html,
-        text,
-        attachments
-      });
-    } catch (error) {
-      logger.error(`Failed to send GDPR data export to ${userData.email}:`, error);
-      throw error;
-    }
-  }
-
-  async sendBulkEmails(emailData) {
-    try {
-      const results = [];
-      const batchSize = 50; // Send 50 emails at a time
-
-      for (let i = 0; i < emailData.length; i += batchSize) {
-        const batch = emailData.slice(i, i + batchSize);
-        const batchPromises = batch.map(email => this.sendEmail(email));
+        this.transporter = null;
+        this.templates = new Map();
+        this.rateLimiter = {
+            sentThisMinute: 0,
+            lastReset: Date.now()
+        };
+        this.queue = [];
+        this.isProcessing = false;
         
-        const batchResults = await Promise.allSettled(batchPromises);
-        results.push(...batchResults);
-
-        // Add delay between batches to avoid rate limiting
-        if (i + batchSize < emailData.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-
-      const successful = results.filter(r => r.status === 'fulfilled').length;
-      const failed = results.filter(r => r.status === 'rejected').length;
-
-      logger.info(`Bulk email campaign completed: ${successful} successful, ${failed} failed`);
-      
-      return {
-        total: emailData.length,
-        successful,
-        failed,
-        results: results.map((result, index) => ({
-          email: emailData[index].to,
-          success: result.status === 'fulfilled',
-          error: result.status === 'rejected' ? result.reason.message : null
-        }))
-      };
-    } catch (error) {
-      logger.error('Bulk email campaign failed:', error);
-      throw error;
+        this.initializeTransporter();
     }
-  }
 
-  async verifyEmail(email) {
-    // Simple email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
+    /**
+     * Initialize the email transporter
+     */
+    async initializeTransporter() {
+        try {
+            this.transporter = nodemailer.createTransporter({
+                host: this.config.host,
+                port: this.config.port,
+                secure: this.config.secure,
+                auth: this.config.auth,
+                pool: true,
+                maxConnections: 5,
+                maxMessages: 100,
+                rateDelta: 60000,
+                rateLimit: this.config.rateLimit
+            });
 
-  async checkEmailReputation(email) {
-    // This would integrate with email reputation services
-    // For now, return a basic check
-    const domain = email.split('@')[1];
-    const suspiciousDomains = ['tempmail.com', '10minutemail.com', 'guerrillamail.com'];
-    
-    return {
-      isValid: true,
-      isSuspicious: suspiciousDomains.includes(domain),
-      domain: domain,
-      score: suspiciousDomains.includes(domain) ? 0.2 : 0.8
-    };
-  }
+            // Verify connection on initialization
+            await this.verifyConnection();
+            console.log('Email transporter initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize email transporter:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Verify email service connection
+     */
+    async verifyConnection() {
+        if (!this.transporter) {
+            throw new Error('Transporter not initialized');
+        }
+
+        try {
+            await this.transporter.verify();
+            return true;
+        } catch (error) {
+            console.error('Email connection verification failed:', error);
+            throw new Error(`Email connection failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Load email template from file
+     */
+    async loadTemplate(templateName) {
+        try {
+            if (this.templates.has(templateName)) {
+                return this.templates.get(templateName);
+            }
+
+            const templatePath = path.join(this.config.templatesDir, `${templateName}.html`);
+            const templateContent = await fs.readFile(templatePath, 'utf8');
+            
+            this.templates.set(templateName, templateContent);
+            return templateContent;
+        } catch (error) {
+            console.error(`Failed to load template ${templateName}:`, error);
+            throw new Error(`Template not found: ${templateName}`);
+        }
+    }
+
+    /**
+     * Render template with provided data
+     */
+    renderTemplate(templateContent, templateData = {}) {
+        try {
+            if (!templateContent) {
+                throw new Error('Template content is required');
+            }
+
+            return mustache.render(templateContent, templateData);
+        } catch (error) {
+            console.error('Template rendering failed:', error);
+            throw new Error(`Template rendering failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Send a single email
+     */
+    async sendEmail(options) {
+        if (!this.transporter) {
+            throw new Error('Email transporter not initialized');
+        }
+
+        try {
+            // Rate limiting check
+            this.checkRateLimit();
+
+            const mailOptions = {
+                from: options.from || this.config.from,
+                to: options.to,
+                subject: options.subject,
+                html: options.html,
+                text: options.text,
+                attachments: options.attachments || [],
+                headers: {
+                    'X-Campaign-ID': options.campaignId || '',
+                    'X-Subscriber-ID': options.subscriberId || ''
+                }
+            };
+
+            const result = await this.transporter.sendMail(mailOptions);
+            
+            // Update rate limiter
+            this.rateLimiter.sentThisMinute++;
+
+            console.log(`Email sent successfully to ${options.to}`);
+            return {
+                messageId: result.messageId,
+                accepted: result.accepted,
+                rejected: result.rejected,
+                pending: result.pending,
+                response: result.response
+            };
+        } catch (error) {
+            console.error(`Failed to send email to ${options.to}:`, error);
+            throw new Error(`Email sending failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Send welcome email to new subscriber
+     */
+    async sendWelcomeEmail(email, subscriberData = {}) {
+        try {
+            const template = await this.loadTemplate('welcome');
+            const html = this.renderTemplate(template, {
+                email,
+                firstName: subscriberData.firstName || 'Subscriber',
+                subscriptionDate: new Date().toLocaleDateString(),
+                unsubscribeUrl: subscriberData.unsubscribeUrl || '',
+                ...subscriberData
+            });
+
+            return await this.sendEmail({
+                to: email,
+                subject: 'Welcome to Piper Newsletter!',
+                html,
+                text: `Welcome to Piper Newsletter, ${subscriberData.firstName || 'Subscriber'}!`,
+                subscriberId: subscriberData.id
+            });
+        } catch (error) {
+            console.error(`Failed to send welcome email to ${email}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Send password reset email
+     */
+    async sendPasswordResetEmail(email, resetData) {
+        try {
+            const template = await this.loadTemplate('password-reset');
+            const html = this.renderTemplate(template, {
+                email,
+                resetUrl: resetData.resetUrl,
+                expiryHours: resetData.expiryHours || 24,
+                ...resetData
+            });
+
+            return await this.sendEmail({
+                to: email,
+                subject: 'Password Reset Request',
+                html,
+                text: `Click here to reset your password: ${resetData.resetUrl}`,
+                subscriberId: resetData.userId
+            });
+        } catch (error) {
+            console.error(`Failed to send password reset email to ${email}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Send subscription confirmation email
+     */
+    async sendSubscriptionConfirmationEmail(email, confirmationData) {
+        try {
+            const template = await this.loadTemplate('subscription-confirmation');
+            const html = this.renderTemplate(template, {
+                email,
+                confirmationUrl: confirmationData.confirmationUrl,
+                newsletterName: confirmationData.newsletterName || 'Piper Newsletter',
+                ...confirmationData
+            });
+
+            return await this.sendEmail({
+                to: email,
+                subject: 'Confirm Your Subscription',
+                html,
+                text: `Please confirm your subscription by clicking: ${confirmationData.confirmationUrl}`,
+                subscriberId: confirmationData.subscriberId
+            });
+        } catch (error) {
+            console.error(`Failed to send subscription confirmation email to ${email}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Send bulk emails with batching
+     */
+    async sendBulkEmails(emailList, campaignData) {
+        const results = {
+            successful: [],
+            failed: [],
+            total: emailList.length
+        };
+
+        try {
+            // Process in batches
+            const batches = this.createBatches(emailList, this.config.batchSize);
+            
+            for (const batch of batches) {
+                const batchPromises = batch.map(async (emailData) => {
+                    try {
+                        const emailOptions = {
+                            to: emailData.email,
+                            subject: campaignData.subject,
+                            html: campaignData.html,
+                            text: campaignData.text,
+                            campaignId: campaignData.campaignId,
+                            subscriberId: emailData.subscriberId
+                        };
+
+                        const result = await this.sendEmail(emailOptions);
+                        results.successful.push({
+                            email: emailData.email,
+                            subscriberId: emailData.subscriberId,
+                            messageId: result.messageId
+                        });
+                        
+                        return result;
+                    } catch (error) {
+                        results.failed.push({
+                            email: emailData.email,
+                            subscriberId: emailData.subscriberId,
+                            error: error.message
+                        });
+                        
+                        console.error(`Failed to send email to ${emailData.email}:`, error);
+                    }
+                });
+
+                await Promise.all(batchPromises);
+                
+                // Small delay between batches to avoid overwhelming the SMTP server
+                await this.delay(1000);
+            }
+
+            console.log(`Bulk email campaign completed: ${results.successful.length} successful, ${results.failed.length} failed`);
+            return results;
+        } catch (error) {
+            console.error('Bulk email campaign failed:', error);
+            throw new Error(`Bulk email sending failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Verify email address format and domain
+     */
+    async verifyEmailAddress(email) {
+        try {
+            // Basic email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return {
+                    valid: false,
+                    reason: 'Invalid email format'
+                };
+            }
+
+            // Domain validation (simplified - in production, you'd check MX records)
+            const domain = email.split('@')[1];
+            
+            // Check for common typos or invalid domains
+            const invalidDomains = ['gmai.com', 'yahooo.com', 'hotmial.com'];
+            if (invalidDomains.includes(domain.toLowerCase())) {
+                return {
+                    valid: false,
+                    reason: 'Likely typo in domain'
+                };
+            }
+
+            return {
+                valid: true,
+                domain: domain,
+                reason: 'Email appears valid'
+            };
+        } catch (error) {
+            console.error(`Email verification failed for ${email}:`, error);
+            return {
+                valid: false,
+                reason: `Verification error: ${error.message}`
+            };
+        }
+    }
+
+    /**
+     * Check email reputation (simplified implementation)
+     */
+    async checkEmailReputation(email) {
+        try {
+            // In a real implementation, this would integrate with services like:
+            // - SendGrid Reputation API
+            // - Mailgun Reputation API
+            // - Custom reputation scoring
+            
+            const domain = email.split('@')[1];
+            
+            // Simplified reputation scoring
+            let reputationScore = 80; // Base score
+            
+            // Check against known bad domains (simplified)
+            const suspiciousDomains = ['tempmail.com', '10minutemail.com', 'mailinator.com'];
+            if (suspiciousDomains.some(d => domain.includes(d))) {
+                reputationScore -= 50;
+            }
+
+            return {
+                score: reputationScore,
+                risk: reputationScore < 50 ? 'high' : reputationScore < 70 ? 'medium' : 'low',
+                recommendations: reputationScore < 50 ? ['Consider additional verification'] : []
+            };
+        } catch (error) {
+            console.error(`Email reputation check failed for ${email}:`, error);
+            throw new Error(`Reputation check failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Process email queue
+     */
+    async processQueue() {
+        if (this.isProcessing || this.queue.length === 0) {
+            return;
+        }
+
+        this.isProcessing = true;
+
+        try {
+            while (this.queue.length > 0) {
+                const emailJob = this.queue.shift();
+                
+                try {
+                    await this.sendEmail(emailJob);
+                    
+                    // Update monitoring metrics
+                    if (global.monitoringService) {
+                        global.monitoringService.incrementNewsletterSent('queued');
+                        global.monitoringService.decrementEmailQueueSize();
+                    }
+                } catch (error) {
+                    console.error('Queue email sending failed:', error);
+                    
+                    // Retry logic
+                    if (emailJob.retryCount < this.config.retryAttempts) {
+                        emailJob.retryCount = (emailJob.retryCount || 0) + 1;
+                        this.queue.push(emailJob);
+                        
+                        // Wait before retrying
+                        await this.delay(this.config.retryDelay);
+                    }
+                }
+
+                // Small delay between emails
+                await this.delay(100);
+            }
+        } finally {
+            this.isProcessing = false;
+        }
+    }
+
+    /**
+     * Add email to queue
+     */
+    addToQueue(emailOptions) {
+        const job = {
+            ...emailOptions,
+            retryCount: 0,
+            addedAt: new Date()
+        };
+
+        this.queue.push(job);
+        
+        // Update monitoring metrics
+        if (global.monitoringService) {
+            global.monitoringService.incrementEmailQueueSize();
+        }
+
+        // Process queue if not already processing
+        if (!this.isProcessing) {
+            this.processQueue();
+        }
+    }
+
+    /**
+     * Close email transporter connection
+     */
+    async close() {
+        if (this.transporter) {
+            try {
+                await this.transporter.close();
+                console.log('Email transporter closed successfully');
+            } catch (error) {
+                console.error('Error closing email transporter:', error);
+                throw error;
+            }
+        }
+    }
+
+    // Helper methods
+    createBatches(array, batchSize) {
+        const batches = [];
+        for (let i = 0; i < array.length; i += batchSize) {
+            batches.push(array.slice(i, i + batchSize));
+        }
+        return batches;
+    }
+
+    checkRateLimit() {
+        const now = Date.now();
+        const minuteAgo = now - 60000;
+        
+        // Reset counter if minute has passed
+        if (this.rateLimiter.lastReset < minuteAgo) {
+            this.rateLimiter.sentThisMinute = 0;
+            this.rateLimiter.lastReset = now;
+        }
+
+        if (this.rateLimiter.sentThisMinute >= this.config.rateLimit) {
+            throw new Error('Rate limit exceeded');
+        }
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Get queue status
+    getQueueStatus() {
+        return {
+            queueSize: this.queue.length,
+            isProcessing: this.isProcessing,
+            rateLimiter: this.rateLimiter
+        };
+    }
 }
 
 module.exports = EmailService;

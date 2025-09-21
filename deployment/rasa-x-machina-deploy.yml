@@ -1,0 +1,54 @@
+# Rasa-X-Machina Deployment Configuration
+# This configuration replaces the old ask-polestar deployment setup
+
+name: rasa-x-machina-piper-dispatch
+region: us-central1
+project: rasa-x-machina
+
+services:
+  main:
+    image: gcr.io/rasa-x-machina/piper-dispatch-ecosystem
+    port: 3000
+    env:
+      - NODE_ENV=production
+      - ORGANIZATION=rasa-x-machina
+      - DOMAIN=rasa-x-machina.dev
+      - GCP_PROJECT_ID=rasa-x-machina
+    resources:
+      cpu: 1
+      memory: 1Gi
+    scaling:
+      min_instances: 1
+      max_instances: 10
+      
+  api:
+    image: gcr.io/rasa-x-machina/piper-dispatch-api
+    port: 8080
+    env:
+      - NODE_ENV=production
+      - ORGANIZATION=rasa-x-machina
+    resources:
+      cpu: 0.5
+      memory: 512Mi
+    scaling:
+      min_instances: 1
+      max_instances: 5
+
+# Domain configuration
+domains:
+  - rasa-x-machina.dev
+  - api.rasa-x-machina.dev
+  - piper.rasa-x-machina.dev
+
+# Security settings
+security:
+  https_redirect: true
+  cors_origins:
+    - https://rasa-x-machina.dev
+    - https://piper.rasa-x-machina.dev
+  
+# Monitoring
+monitoring:
+  enabled: true
+  alerting: true
+  metrics_endpoint: /metrics

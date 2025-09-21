@@ -108,7 +108,7 @@ graph TD
 ```
 Create a new Trae workspace named "piperdispatch" with:
 - Type: Rust
-- Initialize git repository with GitHub remote: https://github.com/ask-polestar/piperdispatch.git
+- Initialize git repository with GitHub remote: https://github.com/rasa-x-machina/piper-dispatch-main.git
 - Configure git credentials:
   - user.email: "newsletter@piperdispatch.com"
   - user.name: "Piper Dispatch"

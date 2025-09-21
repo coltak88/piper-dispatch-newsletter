@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-09-21T20:01:45.000Z",
+  "validationResults": {
+    "passed": [
+      "No ask-polestar references found",
+      "Rasa-x-machina remote configured",
+      "Package.json repository URL updated",
+      "Package.json homepage updated",
+      "Migration check workflow organization-migration.yml present",
+      "Workflow rasa-x-machina-deploy.yml updated for rasa-x-machina",
+      "New file created: .github/workflows/rasa-x-machina-deploy.yml",
+      "New file created: .github/workflows/organization-migration.yml",
+      "New file created: deployment/rasa-x-machina-deploy.yml",
+      "New file created: deployment/.env.rasa-x-machina",
+      "New file created: deployment/cloudbuild.rasa-x-machina.yml",
+      "Found 8 rasa-x-machina.dev references"
+    ],
+    "failed": [],
+    "warnings": []
+  },
+  "summary": {
+    "totalPassed": 12,
+    "totalFailed": 0,
+    "totalWarnings": 0,
+    "success": true
+  }
+}

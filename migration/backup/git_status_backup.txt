@@ -1,0 +1,22 @@
+ M package-lock.json
+ M package.json
+ D packages/api/src/services/EmailService.js
+ M packages/api/src/services/MonitoringService.js
+ M packages/core/src/backend/components/UnifiedDashboard.js
+ D packages/core/src/backend/services/WunaEmailService.js
+ M services/EmailService.js
+ D src/services/WunaEmailService.js
+ M templates/emails/password-reset.html
+ M templates/emails/subscription-confirmation.html
+ M templates/emails/welcome.html
+ M tests/unit/emailService.test.js
+ D wuna-email-service/src/brand/LOGO_README.md
+ D wuna-email-service/src/brand/LogoDemo.jsx
+ D wuna-email-service/src/brand/LogoIntegration.js
+ D wuna-email-service/src/brand/WunaLogo.jsx
+ D wuna-email-service/src/brand/WunaLogo.svg
+ D wuna-email-service/src/brand/logo-demo.html
+ D wuna-email-service/src/gamification/MagpieSystem.js
+?? make-repos-private.bat
+?? make-repos-private.ps1
+?? migration/

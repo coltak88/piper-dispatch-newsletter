@@ -685,7 +685,7 @@ piperdispatch-specialkit/
 ```
 Create a new Trae workspace named "piperdispatch-specialkit" with:
 - Type: Node.js
-- Initialize git repository with GitHub remote: https://github.com/ask-polestar/piperdispatch-specialkit.git
+- Initialize git repository with GitHub remote: https://github.com/rasa-x-machina/piper-dispatch-special-kit.git
 - Configure git credentials:
   - user.email: "newsletter@piperdispatch.com"
   - user.name: "Piper Dispatch Special Kit"

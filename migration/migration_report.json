@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-09-21T19:58:09.967Z",
+  "oldOrganization": "ask-polestar",
+  "newOrganization": "rasa-x-machina",
+  "updatedFiles": [
+    "C:\\Users\\Dell\\piper_newsletter\\migration\\backup\\package.json.backup",
+    "C:\\Users\\Dell\\piper_newsletter\\migration\\run_migration.js",
+    "C:\\Users\\Dell\\piper_newsletter\\migration\\update_deployment_configs.js",
+    "C:\\Users\\Dell\\piper_newsletter\\migration\\update_github_actions.js",
+    "C:\\Users\\Dell\\piper_newsletter\\migration\\update_repository_references.js",
+    "C:\\Users\\Dell\\piper_newsletter\\package.json",
+    "C:\\Users\\Dell\\piper_newsletter\\packages\\api\\package.json",
+    "C:\\Users\\Dell\\piper_newsletter\\packages\\core\\package.json",
+    "C:\\Users\\Dell\\piper_newsletter\\packages\\special-kit\\package.json",
+    "C:\\Users\\Dell\\piper_newsletter\\Piper Dispatch Build Plan - Main.md",
+    "C:\\Users\\Dell\\piper_newsletter\\Piper Dispatch Build Plan.md",
+    "C:\\Users\\Dell\\piper_newsletter\\Piper Dispatch Special Kit.md"
+  ],
+  "errors": [],
+  "summary": {
+    "totalFilesUpdated": 12,
+    "totalErrors": 0,
+    "success": true
+  }
+}

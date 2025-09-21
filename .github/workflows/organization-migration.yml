@@ -1,0 +1,48 @@
+name: Organization Migration Check
+
+on:
+  push:
+    branches: [ main, unified-ecosystem ]
+  workflow_dispatch:
+
+jobs:
+  migration-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check organization references
+      run: |
+        echo "Checking for old organization references..."
+        if grep -r "ask-polestar" . --exclude-dir=node_modules --exclude-dir=.git; then
+          echo "❌ Found old organization references"
+          exit 1
+        else
+          echo "✅ No old organization references found"
+        fi
+        
+    - name: Validate repository URLs
+      run: |
+        echo "Validating repository URLs..."
+        if grep -r "github.com/ask-polestar" . --exclude-dir=node_modules --exclude-dir=.git; then
+          echo "❌ Found old repository URLs"
+          exit 1
+        else
+          echo "✅ All repository URLs updated"
+        fi
+        
+    - name: Check deployment configurations
+      run: |
+        echo "Validating deployment configurations..."
+        if [ -f "deploy.yml" ]; then
+          if grep -q "ask-polestar" deploy.yml; then
+            echo "❌ Deployment config contains old references"
+            exit 1
+          fi
+        fi
+        echo "✅ Deployment configurations validated"
+        
+    - name: Migration status
+      run: echo "✅ Organization migration validation completed"

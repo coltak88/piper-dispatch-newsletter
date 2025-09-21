@@ -1,0 +1,70 @@
+# Rasa-X-Machina Cloud Build Configuration
+# Replaces old ask-polestar cloudbuild configuration
+
+steps:
+  # Build main application
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/rasa-x-machina/piper-dispatch-ecosystem:$COMMIT_SHA', '.']
+    id: 'build-main'
+    
+  # Build API service
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/rasa-x-machina/piper-dispatch-api:$COMMIT_SHA', './packages/api']
+    id: 'build-api'
+    waitFor: ['build-main']
+    
+  # Push images to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/rasa-x-machina/piper-dispatch-ecosystem:$COMMIT_SHA']
+    id: 'push-main'
+    waitFor: ['build-main']
+    
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/rasa-x-machina/piper-dispatch-api:$COMMIT_SHA']
+    id: 'push-api'
+    waitFor: ['build-api']
+    
+  # Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'piper-dispatch-ecosystem'
+      - '--image'
+      - 'gcr.io/rasa-x-machina/piper-dispatch-ecosystem:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-main'
+    waitFor: ['push-main']
+    
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'piper-dispatch-api'
+      - '--image'
+      - 'gcr.io/rasa-x-machina/piper-dispatch-api:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-api'
+    waitFor: ['push-api']
+
+# Configuration
+options:
+  logging: CLOUD_LOGGING_ONLY
+  
+substitutions:
+  _ORGANIZATION: rasa-x-machina
+  _DOMAIN: rasa-x-machina.dev
+  _REGION: us-central1
+
+# Images to build
+images:
+  - 'gcr.io/rasa-x-machina/piper-dispatch-ecosystem:$COMMIT_SHA'
+  - 'gcr.io/rasa-x-machina/piper-dispatch-api:$COMMIT_SHA'

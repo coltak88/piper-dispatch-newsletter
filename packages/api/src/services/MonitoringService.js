@@ -359,17 +359,6 @@ class MonitoringService {
     });
   }
 
-  setupEmailServiceHealthCheck(emailService) {
-    this.addHealthCheck('email_service', async () => {
-      try {
-        await emailService.verifyConnection();
-        return { status: 'healthy', message: 'Email service OK' };
-      } catch (error) {
-        return { status: 'unhealthy', message: `Email service error: ${error.message}` };
-      }
-    });
-  }
-
   setupPaymentServiceHealthCheck(paymentService) {
     this.addHealthCheck('payment_service', async () => {
       try {
