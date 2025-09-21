@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WunaEmail Logo Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: #E2E8F0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .header h1 {
+            color: #6366F1;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #06B6D4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            color: #0891B2;
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .logo-showcase {
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            text-align: center;
+        }
+        
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .logo-variant {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            text-align: center;
+        }
+        
+        .logo-variant h3 {
+            color: #6366F1;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .logo-variant p {
+            color: #94A3B8;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        .features {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 40px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .features h3 {
+            color: #6366F1;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature-item {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        
+        .feature-item h4 {
+            color: #0891B2;
+            margin-bottom: 10px;
+        }
+        
+        .feature-item p {
+            color: #94A3B8;
+            font-size: 0.9rem;
+        }
+        
+        .color-palette {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .color-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        .color-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: #94A3B8;
+            white-space: nowrap;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WunaEmail Logo Showcase</h1>
+            <p>Multicolour mystical logo with psychological gamification effects</p>
+        </div>
+        
+        <div class="logo-showcase">
+            <div class="floating">
+                <!-- WUNA Logo SVG -->
+                <svg width="450" height="150" viewBox="0 0 450 150" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Ethereal gradient for W -->
+                        <linearGradient id="etherealGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#A855F7;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Tranquil gradient for U -->
+                        <linearGradient id="tranquilGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0891B2;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#06B6D4;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0E7490;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Novelty gradient for N -->
+                        <linearGradient id="noveltyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0EA5E9;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#0284C7;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0369A1;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Dawn gradient for A -->
+                        <linearGradient id="dawnGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#D97706;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#F59E0B;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#B45309;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Mystical glow filter -->
+                        <filter id="mysticalGlow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge> 
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        
+                        <!-- Animated particles -->
+                        <filter id="particleGlow">
+                            <feGaussianBlur stdDeviation="1" result="particleBlur"/>
+                            <feMerge>
+                                <feMergeNode in="particleBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    
+                    <!-- Background cosmic field -->
+                    <rect width="450" height="150" fill="#0F172A" opacity="0.9" rx="8"/>
+                    
+                    <!-- Quantum particles -->
+                    <circle cx="60" cy="15" r="1.8" fill="#8B5CF6" opacity="0.7" filter="url(#particleGlow)">
+                        <animate attributeName="cy" values="15;125;15" dur="9s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.7;0.2;0.7" dur="4.5s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <circle cx="120" cy="125" r="1.8" fill="#06B6D4" opacity="0.7" filter="url(#particleGlow)">
+                        <animate attributeName="cy" values="125;15;125" dur="11s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.7;0.2;0.7" dur="5.5s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <circle cx="180" cy="15" r="1.8" fill="#10B981" opacity="0.7" filter="url(#particleGlow)">
+                        <animate attributeName="cy" values="15;125;15" dur="8s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.7;0.2;0.7" dur="4s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <circle cx="240" cy="125" r="1.8" fill="#F59E0B" opacity="0.7" filter="url(#particleGlow)">
+                        <animate attributeName="cy" values="125;15;125" dur="10s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.7;0.2;0.7" dur="5s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <!-- W letter - Ethereal Wisdom -->
+                    <g transform="translate(20, 25)" filter="url(#mysticalGlow)">
+                        <path d="M 0 5 L 15 45 L 30 25 L 45 45 L 60 5 L 50 5 L 37.5 30 L 30 20 L 22.5 30 L 10 5 Z" fill="url(#etherealGradient)" opacity="0.95"/>
+                        <circle cx="30" cy="25" r="3" fill="#8B5CF6" opacity="0.8">
+                            <animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                    </g>
+                    
+                    <!-- U letter - Tranquil Understanding -->
+                    <g transform="translate(75, 25)" filter="url(#mysticalGlow)">
+                        <path d="M 10 5 Q 10 45 30 45 Q 50 45 50 5 L 40 5 Q 40 35 30 35 Q 20 35 20 5 Z" fill="url(#tranquilGradient)" opacity="0.95"/>
+                        <path d="M 15 30 Q 25 25 35 30" stroke="#06B6D4" stroke-width="2" fill="none" opacity="0.6">
+                            <animate attributeName="d" values="M 15 30 Q 25 25 35 30;M 15 30 Q 25 35 35 30;M 15 30 Q 25 25 35 30" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                    </g>
+                    
+                    <!-- N letter - Novelty -->
+                    <g transform="translate(130, 25)" filter="url(#mysticalGlow)">
+                        <path d="M 5 5 L 5 45 L 15 45 L 15 15 L 40 45 L 50 45 L 50 5 L 40 5 L 40 35 L 15 5 Z" fill="url(#noveltyGradient)" opacity="0.95"/>
+                        <path d="M 27.5 25 L 25 20 L 27.5 22.5 L 30 20 L 27.5 25" fill="#0EA5E9" opacity="0.8">
+                            <animateTransform attributeName="transform" type="scale" values="1;1.2;1" dur="2.5s" repeatCount="indefinite"/>
+                        </path>
+                    </g>
+                    
+                    <!-- A letter - Dawn Awakening -->
+                    <g transform="translate(185, 25)" filter="url(#mysticalGlow)">
+                        <path d="M 25 5 L 5 45 L 15 45 L 18 38 L 32 38 L 35 45 L 45 45 Z M 25 15 L 30 28 L 20 28 Z" fill="url(#dawnGradient)" opacity="0.95"/>
+                        <circle cx="25" cy="10" r="4" fill="#F59E0B" opacity="0.8">
+                            <animate attributeName="cy" values="10;8;10" dur="4s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.8;1;0.8" dur="4s" repeatCount="indefinite"/>
+                        </circle>
+                    </g>
+                    
+                    <!-- Energy field connecting letters -->
+                    <g opacity="0.5">
+                        <path d="M 65 30 Q 95 20 115 30" stroke="#8B5CF6" stroke-width="1" fill="none" stroke-dasharray="5,5">
+                            <animate attributeName="stroke-dashoffset" values="0;10;0" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M 115 30 Q 145 40 165 30" stroke="#06B6D4" stroke-width="1" fill="none" stroke-dasharray="3,3">
+                            <animate attributeName="stroke-dashoffset" values="0;6;0" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M 165 30 Q 195 25 215 30" stroke="#0EA5E9" stroke-width="1" fill="none" stroke-dasharray="4,4">
+                            <animate attributeName="stroke-dashoffset" values="0;8;0" dur="2.5s" repeatCount="indefinite"/>
+                        </path>
+                    </g>
+                    
+                    <!-- Tagline -->
+                    <text x="225" y="85" font-family="Inter, sans-serif" font-size="10" fill="#E2E8F0" text-anchor="middle" opacity="0.8" letter-spacing="2">
+                        Wisdom. Understanding. Novelty. Awakening.
+                    </text>
+                    
+                    <!-- Mystical border -->
+                    <rect x="5" y="5" width="440" height="140" fill="none" stroke="#6366F1" stroke-width="0.5" stroke-dasharray="10,5" opacity="0.5" rx="8">
+                        <animate attributeName="stroke-dashoffset" values="0;15;0" dur="4s" repeatCount="indefinite"/>
+                    </rect>
+                </svg>
+            </div>
+            <p class="pulse" style="color: #0891B2; margin-top: 20px; font-size: 1.1rem;">
+                WUNA - Where every email becomes a mystical journey
+            </p>
+        </div>
+        
+        <div class="logo-grid">
+            <div class="logo-variant">
+                <h3>🌟 Static Logo</h3>
+                <p>Clean, professional version for formal contexts</p>
+                <svg width="300" height="100" viewBox="0 0 450 150" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="staticEthereal" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#A855F7;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="staticTranquil" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0891B2;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#06B6D4;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0E7490;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="staticNovelty" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0EA5E9;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#0284C7;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0369A1;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="staticDawn" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#D97706;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#F59E0B;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#B45309;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="300" height="100" fill="#0F172A" opacity="0.9" rx="6"/>
+                    <g transform="translate(15, 20)">
+                        <path d="M 0 3 L 10 30 L 20 17 L 30 30 L 40 3 L 33 3 L 25 20 L 20 13 L 15 20 L 7 3 Z" fill="url(#staticEthereal)" opacity="0.95"/>
+                    </g>
+                    <g transform="translate(52, 20)">
+                        <path d="M 7 3 Q 7 30 20 30 Q 33 30 33 3 L 27 3 Q 27 23 20 23 Q 13 23 13 3 Z" fill="url(#staticTranquil)" opacity="0.95"/>
+                    </g>
+                    <g transform="translate(87, 20)">
+                        <path d="M 3 3 L 3 30 L 10 30 L 10 10 L 27 30 L 33 30 L 33 3 L 27 3 L 27 23 L 10 3 Z" fill="url(#staticNovelty)" opacity="0.95"/>
+                    </g>
+                    <g transform="translate(125, 20)">
+                        <path d="M 17 3 L 3 30 L 10 30 L 12 25 L 22 25 L 25 30 L 32 30 Z M 17 10 L 20 19 L 14 19 Z" fill="url(#staticDawn)" opacity="0.95"/>
+                    </g>
+                    <text x="150" y="85" font-family="Inter, sans-serif" font-size="7" fill="#E2E8F0" text-anchor="middle" opacity="0.8" letter-spacing="1">
+                        Wisdom. Understanding. Novelty. Awakening.
+                    </text>
+                </svg>
+            </div>
+            
+            <div class="logo-variant">
+                <h3>🎮 Gamified Logo</h3>
+                <p>Enhanced with user achievements and level progression</p>
+                <svg width="300" height="100" viewBox="0 0 450 150" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gamifiedEthereal" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#A855F7;stop-opacity:1" />
+                        </linearGradient>
+                        <filter id="gamifiedGlow">
+                            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                            <feMerge> 
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <filter id="achievementAura">
+                            <feGaussianBlur stdDeviation="3" result="auraBlur"/>
+                            <feColorMatrix in="auraBlur" type="matrix" 
+                                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 15 -5" result="aura"/>
+                            <feMerge> 
+                                <feMergeNode in="aura"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <rect width="300" height="100" fill="#0F172A" opacity="0.9" rx="6"/>
+                    <g transform="translate(15, 20)" filter="url(#gamifiedGlow)">
+                        <path d="M 0 3 L 10 30 L 20 17 L 30 30 L 40 3 L 33 3 L 25 20 L 20 13 L 15 20 L 7 3 Z" fill="url(#gamifiedEthereal)" opacity="1"/>
+                        <circle cx="20" cy="17" r="2.5" fill="#8B5CF6" opacity="0.9">
+                            <animate attributeName="r" values="2;3.5;2" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                    </g>
+                    <g transform="translate(52, 20)" filter="url(#gamifiedGlow)">
+                        <path d="M 7 3 Q 7 30 20 30 Q 33 30 33 3 L 27 3 Q 27 23 20 23 Q 13 23 13 3 Z" fill="url(#staticTranquil)" opacity="1"/>
+                    </g>
+                    <g transform="translate(87, 20)" filter="url(#gamifiedGlow)">
+                        <path d="M 3 3 L 3 30 L 10 30 L 10 10 L 27 30 L 33 30 L 33 3 L 27 3 L 27 23 L 10 3 Z" fill="url(#staticNovelty)" opacity="1"/>
+                    </g>
+                    <g transform="translate(125, 20)" filter="url(#gamifiedGlow)">
+                        <path d="M 17 3 L 3 30 L 10 30 L 12 25 L 22 25 L 25 30 L 32 30 Z M 17 10 L 20 19 L 14 19 Z" fill="url(#staticDawn)" opacity="1"/>
+                        <circle cx="17" cy="7" r="3" fill="#F59E0B" opacity="1">
+                            <animate attributeName="cy" values="7;5;7" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                    </g>
+                    <!-- Achievement star -->
+                    <text x="270" y="25" font-size="16" fill="#F59E0B" text-anchor="middle" filter="url(#achievementAura)">⭐</text>
+                    <text x="150" y="85" font-family="Inter, sans-serif" font-size="7" fill="#E2E8F0" text-anchor="middle" opacity="0.9" letter-spacing="1">
+                        Level 15 • 4 Achievements Unlocked
+                    </text>
+                </svg>
+            </div>
+            
+            <div class="logo-variant">
+                <h3>🔮 Mystical Logo</h3>
+                <p>Occult-themed with animated energy fields</p>
+                <svg width="300" height="100" viewBox="0 0 450 150" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="mysticalEthereal" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#A855F7;stop-opacity:1" />
+                        </linearGradient>
+                        <filter id="mysticalAura">
+                            <feGaussianBlur stdDeviation="2" result="mysticalBlur"/>
+                            <feColorMatrix in="mysticalBlur" type="matrix" 
+                                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 8 -2" result="mysticalAura"/>
+                            <feMerge> 
+                                <feMergeNode in="mysticalAura"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <rect width="300" height="100" fill="#0F172A" opacity="0.9" rx="6"/>
+                    
+                    <!-- Mystical energy field -->
+                    <circle cx="150" cy="50" r="40" fill="none" stroke="#8B5CF6" stroke-width="0.5" opacity="0.3" stroke-dasharray="2,2">
+                        <animate attributeName="r" values="35;45;35" dur="4s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.3;0.1;0.3" dur="4s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <g transform="translate(15, 20)" filter="url(#mysticalAura)">
+                        <path d="M 0 3 L 10 30 L 20 17 L 30 30 L 40 3 L 33 3 L 25 20 L 20 13 L 15 20 L 7 3 Z" fill="url(#mysticalEthereal)" opacity="0.95"/>
+                        <circle cx="20" cy="17" r="2" fill="#8B5CF6" opacity="0.8"/>
+                    </g>
+                    <g transform="translate(52, 20)">
+                        <path d="M 7 3 Q 7 30 20 30 Q 33 30 33 3 L 27 3 Q 27 23 20 23 Q 13 23 13 3 Z" fill="url(#staticTranquil)" opacity="0.95"/>
+                    </g>
+                    <g transform="translate(87, 20)">
+                        <path d="M 3 3 L 3 30 L 10 30 L 10 10 L 27 30 L 33 30 L 33 3 L 27 3 L 27 23 L 10 3 Z" fill="url(#staticNovelty)" opacity="0.95"/>
+                    </g>
+                    <g transform="translate(125, 20)">
+                        <path d="M 17 3 L 3 30 L 10 30 L 12 25 L 22 25 L 25 30 L 32 30 Z M 17 10 L 20 19 L 14 19 Z" fill="url(#staticDawn)" opacity="0.95"/>
+                        <circle cx="17" cy="7" r="2" fill="#F59E0B" opacity="0.8"/>
+                    </g>
+                    
+                    <!-- Connecting energy lines -->
+                    <g opacity="0.4">
+                        <path d="M 55 35 Q 80 25 100 35" stroke="#8B5CF6" stroke-width="1" fill="none" stroke-dasharray="3,3">
+                            <animate attributeName="stroke-dashoffset" values="0;6;0" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M 100 35 Q 120 45 140 35" stroke="#06B6D4" stroke-width="1" fill="none" stroke-dasharray="2,2">
+                            <animate attributeName="stroke-dashoffset" values="0;4;0" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                    </g>
+                    
+                    <text x="150" y="85" font-family="Inter, sans-serif" font-size="7" fill="#E2E8F0" text-anchor="middle" opacity="0.8" letter-spacing="1">
+                        Tapping into ancient email wisdom
+                    </text>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="features">
+            <h3>🎨 Logo Features & Design Philosophy</h3>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h4>🌈 Multicolour Design</h4>
+                    <p>Each letter represents a core principle: Wisdom (Purple), Understanding (Cyan), Novelty (Blue), Awakening (Gold)</p>
+                </div>
+                <div class="feature-item">
+                    <h4>✨ Animated Elements</h4>
+                    <p>Floating particles, pulsing circles, and energy fields create a mystical, engaging experience</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🎮 Gamification Integration</h4>
+                    <p>Logo adapts to user level, achievements, and engagement with dynamic effects and visual feedback</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🔮 Occult-Themed</h4>
+                    <p>Mystical symbols, cosmic backgrounds, and ancient wisdom themes align with the brand's esoteric nature</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🛡️ Security Focus</h4>
+                    <p>Visual metaphors for privacy, quantum resistance, and anonymous communication are subtly integrated</p>
+                </div>
+                <div class="feature-item">
+                    <h4>📱 Responsive Design</h4>
+                    <p>Scalable SVG format ensures crisp display across all devices and screen sizes</p>
+                </div>
+            </div>
+            
+            <div class="color-palette">
+                <div class="color-swatch" style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);">
+                    <span class="color-label">Wisdom</span>
+                </div>
+                <div class="color-swatch" style="background: linear-gradient(135deg, #0891B2 0%, #06B6D4 100%);">
+                    <span class="color-label">Understanding</span>
+                </div>
+                <div class="color-swatch" style="background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);">
+                    <span class="color-label">Novelty</span>
+                </div>
+                <div class="color-swatch" style="background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);">
+                    <span class="color-label">Awakening</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
